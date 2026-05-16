@@ -65,7 +65,6 @@ I have the Standard model. Silver casing, not the black Pro. Here's what's insid
 - External power brick still bothers me — there's empty space at the top of the case
 - 800MB/s cap on the four NVMe slots in the drive bay area is worth knowing before you buy
 - Motherboard NVMe slots are unrestricted, so boot from there or use for cache
-- For a deeper dive, NASCompares has a thorough review: https://nascompares.com/review/zimacube-2-review/
 
 ---
 
