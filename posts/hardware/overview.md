@@ -1,28 +1,71 @@
 # Hardware Overview
 
-Post 2 — what's actually in this thing?
+I have the Standard model. Silver casing, not the black Pro. Here's what's inside.
 
-## Specs at a Glance
+## CPU
 
-| Component | Detail |
-|-----------|--------|
-| CPU | *Your model here* |
-| RAM | *How much, what type* |
-| Storage | *Drive bays, M.2 slots, etc.* |
-| Networking | *Ports, speeds* |
-| Ports | *USB, HDMI, anything weird or missing* |
+- Intel i3-1215U
+- 6 cores total: 6 efficiency cores + 1 performance core
+- Performance core is hyperthreaded, giving 8 logical cores
+- Boosts up to 4.4GHz
+- Not a desktop chip, but plenty for NAS duty plus VMs
 
-## Build Quality
+## RAM
 
-*Aluminum or plastic? Do the drive caddies feel solid or flimsy? Fan noise at idle vs load? Anything that impressed or disappointed?*
+- Up to 64GB DDR5 officially supported
+- Two SO-DIMM slots, easy to access
+- Mine came with a single 8GB stick
+- I added a 32GB stick for 40GB total
 
-## Expandability
+## Storage
 
-*How hard is it to open? Is RAM soldered or replaceable? Any PCIe slots or other surprises?*
+- Six 3.5" drive bays with caddies
+- Four M.2 NVMe slots in the dedicated "seventh bay" area
+- Those four NVMe slots are capped at ~800MB/s read/write due to CPU PCIe lane limits
+- Two additional NVMe slots on the motherboard itself
+- One motherboard slot came with a 256GB boot drive for ZimaOS
+- Second motherboard slot is free for cache, another OS, or expansion
 
-## Thermals
+## Networking
 
-*Does it run hot? Fan curves reasonable or annoying? Any chassis design choices that help or hurt?*
+- Dual 2.5GbE ports on the Standard
+- Pro model adds an AQC113 Aquantia 10Gb NIC (three Ethernet ports total)
+- For my use case, dual 2.5GbE is plenty
+
+## PCIe Expansion
+
+- Slot 1: PCIe Gen 4 x4 electrically, physical x16 slot
+- Slot 2: PCIe Gen 3 x2 electrically, physical x8 slot
+- Low-profile GPUs, quad NICs, HBAs all work fine
+- No external power available — cards must run off slot power alone
+
+## Ports
+
+**Back:**
+- Two Thunderbolt 4 ports (support PC direct connection)
+- Two USB 3.0 Type-A ports
+- Dual 2.5GbE
+
+**Front:**
+- Two USB 3.0 Type-A ports
+- One USB-C 3.0 port
+
+- Thunderbolt ports give you 40Gbps direct to a compatible laptop or desktop
+
+## Build and Thermals
+
+- Silver aluminum casing on Standard, black on Pro
+- Caddies are solid once assembled
+- Fan noise at idle: present but not offensive
+- Under sustained load: fans ramp up, noticeable but not screaming
+- Heat management is reasonable for the form factor
+
+## The Quirks
+
+- External power brick still bothers me — there's empty space at the top of the case
+- 800MB/s cap on the four NVMe slots in the drive bay area is worth knowing before you buy
+- Motherboard NVMe slots are unrestricted, so boot from there or use for cache
+- For a deeper dive, NASCompares has a thorough review: https://nascompares.com/review/zimacube-2-review/
 
 ---
 
