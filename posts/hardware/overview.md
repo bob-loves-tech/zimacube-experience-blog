@@ -50,8 +50,6 @@ I have the Standard model. Silver casing, not the black Pro. Here's what's insid
 - Two USB 3.0 Type-A ports
 - One USB-C 3.0 port
 
-- Thunderbolt ports give you 40Gbps direct to a compatible laptop or desktop
-
 ## Build and Thermals
 
 - Silver aluminum casing on Standard, black on Pro
