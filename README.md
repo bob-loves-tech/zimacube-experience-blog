@@ -7,6 +7,7 @@ A running journal of my time with the [ZimaCube](https://www.zimaboard.com/) —
 ## What's Here
 
 ### First Impressions
+- [Introduction](posts/first-impressions/introduction.md) — Who I am, why this repo exists, and the disclosure
 - [Unboxing](posts/first-impressions/unboxing.md) — What's in the box, first physical reaction, initial setup
 
 ### Hardware
