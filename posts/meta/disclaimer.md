@@ -13,8 +13,9 @@ I received my ZimaCube **free of charge** through the Zima Pioneer Programme. Th
 ## My History With Zima
 
 This isn't my first rodeo with this company. I've also reviewed:
-- **Zima Blade** — [add link or note when available]
-- **Zima Board** — [add link or note when available]
+- **Zima Blade** — https://www.zimaspace.com/products/blade-personal-nas
+- **Zima Board 2** — https://www.zimaspace.com/products/single-board2-server
+- **ZimaCube** — https://www.zimaspace.com/products/cube-personal-cloud
 
 I've worked with Zima in the past and I genuinely like their products. That means:
 - I have **existing goodwill** toward the brand

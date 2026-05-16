@@ -4,7 +4,7 @@ I make videos. That's what I do. I've got 66,000 people following Bob Lov's Tech
 
 But the ZimaCube made me want to write instead.
 
-This little box arrived because I'm part of the Zima Pioneer Programme. Ice Whale sent it to me free. This isn't new for me — they've reached out before, sent me the ZimaBoard 2 (which I thought was fantastic) and the Zima Blade. So yeah, I have history with them. I like what they make. You should know that going in.
+This little box arrived because I'm part of the Zima Pioneer Programme. Ice Whale sent it to me free. This isn't new for me — they've reached out before, sent me the ZimaBoard 2 (which I thought was fantastic) and the Zima Blade. So yeah, I have history with them. I like what they make. You should know that going in. [Read the full disclosure →](../meta/disclaimer.md)
 
 Because I got this for free, I kept thinking about the best way to share it. One video? A series? I kept coming back to the same problem: people watching a 60-second TikTok or a 10-minute YouTube video aren't going to remember the details when they're actually sitting there trying to set up their own cloud. They need something they can reference. Something they can search.
 
