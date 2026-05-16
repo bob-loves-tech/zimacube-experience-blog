@@ -17,7 +17,7 @@ A running journal of my time with the [ZimaCube](https://www.zimaboard.com/) —
 - [Bare-Metal Setup](posts/windows-server/bare-metal-setup.md) — Why I wiped ZimaOS, installation quirks, driver hunt
 
 ### Homelab Journal
-- *(Coming soon)*
+- [ZimaOS Review](posts/homelab-journal/zimaos-review.md) — Why it's good on small devices, wrong for the Standard/Pro
 
 ## The Standout Experiment So Far
 
