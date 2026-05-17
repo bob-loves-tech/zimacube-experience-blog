@@ -5,8 +5,13 @@
 A running journal of my time with the [ZimaCube](https://www.zimaboard.com/) — not a formal review, just notes, experiments, and one slightly overkill homelab project.
 
 <p align="center">
-  <img src="assets/images/readme/25539.jpg" width="400" alt="ZimaCube angle 1" />
-  <img src="assets/images/readme/25540.jpg" width="400" alt="ZimaCube angle 2" />
+  <img src="assets/images/readme/25539.jpg" width="700" alt="ZimaCube" /><br />
+  <em>ZimaCube — stunning.</em>
+</p>
+
+<p align="center">
+  <img src="assets/images/readme/25540.jpg" width="700" alt="ZimaCube" /><br />
+  <em>ZimaCube — stunning.</em>
 </p>
 
 ## What's Here
