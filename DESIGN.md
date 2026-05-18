@@ -225,7 +225,38 @@ This is **enforced** in both Markdown source and HTML output.
 
 ---
 
-## 9. Backlinks Architecture
+## 9. Homepage Structure (`index.md` / `index.html`)
+
+The homepage is the entry point for all readers. It has three parts:
+
+### 1. Narrative Intro
+- Your voice, your hook, why this blog exists
+- Keep it personal and engaging
+- No bullet lists, no formal structure
+
+### 2. "What's Here" Directory (REQUIRED)
+- **This section must exist and must be kept current.**
+- Use `h2` for the "What's Here" heading
+- Use `h3` for categories (First Impressions, Hardware, Windows Server Project, etc.)
+- Each post gets ONE inline link under its category:
+  ```markdown
+  ### Hardware
+
+  Specs, teardowns, and the physical reality. [The full breakdown →](posts/hardware/overview.html)
+  ```
+- Links must point to `.html` files, never `.md`
+- If a post doesn't fit existing categories, create a new `h3`
+- Descriptions should be short — one sentence, maybe two
+
+### 3. Closing Section
+- "The Standout Experiment So Far" or similar wrap-up
+- Your honest take, current status, what's next
+
+**CRITICAL:** Every new post MUST be added to "What's Here" before the commit is made. No exceptions.
+
+---
+
+## 10. Backlinks Architecture
 
 Every post HTML must include at the bottom:
 
@@ -239,7 +270,7 @@ Links to posts that reference this page.
 
 ---
 
-## 10. File Structure for Generated HTML
+## 11. File Structure for Generated HTML
 
 ```
 repo-root/
@@ -265,7 +296,7 @@ repo-root/
 
 ---
 
-## 11. GitHub Pages Setup
+## 12. GitHub Pages Setup
 
 1. Add `.nojekyll` to repo root (prevents Jekyll processing)
 2. Enable GitHub Pages from `main` branch, root folder
