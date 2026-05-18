@@ -23,6 +23,7 @@ A running journal of my time with the [ZimaCube](https://www.zimaboard.com/) —
 ### Hardware
 - [Overview](posts/hardware/overview.md) — Build quality, ports, drive caddies, quirks
 - [Taking It Apart](posts/hardware/disassembly.md) — What's inside, the fan saga, and one mystery standoff
+- [Would I Buy It?](posts/hardware/would-i-buy-it.md) — The honest math on what this machine actually costs
 
 ### The Windows Server Project
 - [Bare-Metal Setup](posts/windows-server/bare-metal-setup.md) — Why I wiped ZimaOS, installation quirks, driver hunt
