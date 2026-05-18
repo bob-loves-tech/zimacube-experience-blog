@@ -26,7 +26,7 @@ The moment it arrived. [Why I chose writing over video →](posts/first-impressi
 
 ### Hardware
 
-Specs, teardowns, and the physical reality of the thing. [The full breakdown: CPU, RAM, storage, networking, and quirks →](posts/hardware/overview.html) [Taking it apart: the fan saga, mystery standoffs, and what's inside →](posts/hardware/disassembly.html)
+Specs, teardowns, and the physical reality of the thing. [The full breakdown: CPU, RAM, storage, networking, and quirks →](posts/hardware/overview.html) [Taking it apart: the fan saga, mystery standoffs, and what's inside →](posts/hardware/disassembly.html) [Would I buy it? The honest math on what this machine actually costs →](posts/hardware/would-i-buy-it.html)
 
 ### The Windows Server Project
 
