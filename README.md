@@ -28,7 +28,8 @@ A running journal of my time with the [ZimaCube](https://www.zimaboard.com/) —
 - [Bare-Metal Setup](posts/windows-server/bare-metal-setup.md) — Why I wiped ZimaOS, installation quirks, driver hunt
 
 ### Homelab Journal
-- [ZimaOS Review](posts/homelab-journal/zimaos-review.md) — Why it's good on small devices, wrong for the Standard/Pro
+- [ZimaOS Review](posts/homelab-journal/zimaos-review.md) — Why it's good on small devices, wrong for the Cube
+- [Why Proxmox Is the Only OS That Makes Sense](posts/homelab-journal/proxmox-primary-os.md) — NFS-mounted Synology, a three-host fleet, and why I should have done this from day one
 
 ## The Standout Experiment So Far
 

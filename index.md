@@ -34,7 +34,7 @@ The experiment that started it all. [How I wiped ZimaOS, installed Windows Serve
 
 ### Homelab Journal
 
-Operating systems, experiments, and what I'm running now. [Why ZimaOS is good on small devices but wrong for the Standard and Pro →](posts/homelab-journal/zimaos-review.html)
+Operating systems, experiments, and what I'm running now. [Why ZimaOS is good on small devices but wrong for the Cube →](posts/homelab-journal/zimaos-review.html) [Why Proxmox is the only OS that makes sense — NFS-mounted Synology, a three-host fleet, and why I should have done this from day one →](posts/homelab-journal/proxmox-primary-os.html)
 
 ### Meta
 
