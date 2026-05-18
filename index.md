@@ -16,35 +16,29 @@ If you're here because you're considering buying one, I want you to leave with e
 
 ---
 
-## First Impressions
+## What's Here
 
-The box showed up and I wasn't sure what to expect. I'd seen renders, but renders always look better than reality. [Here's what happened when I actually lifted it out →](posts/first-impressions/unboxing.html)
+A running collection of everything I've learned, broken, fixed, and wondered about while living with the ZimaCube. Pick a section below or scroll through the whole thing.
 
-I also wrote about why I chose to document this in writing instead of just filming it. [That's here if you're curious about the thinking behind the project →](posts/first-impressions/introduction.html)
+### First Impressions
 
----
+The moment it arrived. [Why I chose writing over video →](posts/first-impressions/introduction.html) [What was in the box and how first boot went →](posts/first-impressions/unboxing.html)
 
-## Hardware
+### Hardware
 
-I have the Standard model. Silver casing, not the black Pro. I spent a lot of time with the physical box — the silver casing feels more premium than I expected, though the external power brick still annoys me. The caddies are solid once assembled, and the fan noise at idle is present but not offensive. Under sustained load it ramps up, noticeable but not screaming.
+Specs, teardowns, and the physical reality of the thing. [The full breakdown: CPU, RAM, storage, networking, and quirks →](posts/hardware/overview.html) [Taking it apart: the fan saga, mystery standoffs, and what's inside →](posts/hardware/disassembly.html)
 
-[Here's the full hardware breakdown: CPU, RAM, storage, networking, and the quirks →](posts/hardware/overview.html)
+### The Windows Server Project
 
-I also took the whole thing apart. The fan saga, one mystery standoff, and what I found inside. [That's here if you want to see what the internals look like →](posts/hardware/disassembly.html)
+The experiment that started it all. [How I wiped ZimaOS, installed Windows Server 2025 bare metal, and hunted for drivers →](posts/windows-server/bare-metal-setup.html)
 
----
+### Homelab Journal
 
-## The Windows Server Project
+Operating systems, experiments, and what I'm running now. [Why ZimaOS is good on small devices but wrong for the Standard and Pro →](posts/homelab-journal/zimaos-review.html)
 
-This is the weird thread that ties this whole thing together. I wiped ZimaOS and installed Windows Server 2025 bare metal on a NAS box. It was probably overkill and definitely weird. The driver hunt was real — Intel i226-V 2.5GbE adapters don't work out of the box on Server 2025, and neither Snappy Driver Installer nor Driver Booster found anything useful. I ended up manually installing from Windows Update Catalog CAB files.
+### Meta
 
-That experiment is over now. I moved to Proxmox for GPU passthrough and VM flexibility. But the journey to get there was... educational. [Here's how the bare-metal setup went →](posts/windows-server/bare-metal-setup.html)
-
----
-
-## Homelab Journal
-
-Before I went full Windows-then-Proxmox, I ran ZimaOS for a bit. It's good on small devices. It's wrong for the Standard and Pro models, in my opinion — too limited for the hardware you're getting. [Here's my full take on ZimaOS →](posts/homelab-journal/zimaos-review.html)
+[Full disclosure about the Zima Pioneer Programme, my history with the brand, and why you should read everything here with that bias in mind →](posts/meta/disclaimer.html)
 
 ---
 

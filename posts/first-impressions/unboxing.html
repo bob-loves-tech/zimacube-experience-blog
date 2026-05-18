@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZimaCube Experience Blog</title>
+    <title>Unboxing and First Boot — ZimaCube Experience Blog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -323,6 +323,25 @@
             color: inherit;
         }
 
+        /* Images */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid var(--border-light);
+            display: block;
+            margin: 24px 0;
+        }
+
+        figcaption, .image-caption {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: -16px;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
         /* Footer date */
         .post-footer {
             text-align: center;
@@ -334,6 +353,42 @@
         }
 
         .post-footer em {
+            font-style: italic;
+        }
+
+        /* Backlinks */
+        .backlinks {
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .backlinks h3 {
+            font-size: 1.125rem;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        .backlinks ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .backlinks ul li::before {
+            display: none;
+        }
+
+        .backlinks li {
+            margin-bottom: 8px;
+        }
+
+        .backlinks a {
+            font-size: 0.9375rem;
+        }
+
+        .backlinks-empty {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
             font-style: italic;
         }
 
@@ -398,13 +453,8 @@
     <div class="mobile-drawer" id="mobileDrawer">
         <div class="toc-title">Contents</div>
         <ul class="toc-list" id="mobileToc">
-            <li><a href="#whats-here">What's Here</a></li>
-            <li><a href="#first-impressions">First Impressions</a></li>
-            <li><a href="#hardware">Hardware</a></li>
-            <li><a href="#the-windows-server-project">The Windows Server Project</a></li>
-            <li><a href="#homelab-journal">Homelab Journal</a></li>
-            <li><a href="#meta">Meta</a></li>
-            <li><a href="#the-standout-experiment-so-far">The Standout Experiment So Far</a></li>
+            <li><a href="#first-boot">First Boot</a></li>
+            <li><a href="#the-paradox">The Paradox</a></li>
         </ul>
     </div>
 
@@ -412,13 +462,8 @@
     <aside class="sidebar" id="sidebar">
         <div class="toc-title">Contents</div>
         <ul class="toc-list" id="desktopToc">
-            <li><a href="#whats-here">What's Here</a></li>
-            <li><a href="#first-impressions">First Impressions</a></li>
-            <li><a href="#hardware">Hardware</a></li>
-            <li><a href="#the-windows-server-project">The Windows Server Project</a></li>
-            <li><a href="#homelab-journal">Homelab Journal</a></li>
-            <li><a href="#meta">Meta</a></li>
-            <li><a href="#the-standout-experiment-so-far">The Standout Experiment So Far</a></li>
+            <li><a href="#first-boot">First Boot</a></li>
+            <li><a href="#the-paradox">The Paradox</a></li>
         </ul>
     </aside>
 
@@ -429,62 +474,34 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="content-inner">
-            <h1>ZimaCube Experience Blog</h1>
-
-            <p>I make videos. That's what I do. I've got 66,000 people following Bob Lov's Tech on TikTok and about 1,700 on YouTube, and usually when something interesting lands on my desk, I hit record and talk into a camera.</p>
-
-            <p>But the ZimaCube made me want to write instead.</p>
-
-            <p>This little box arrived because I'm part of the Zima Pioneer Programme. Ice Whale sent it to me free. This isn't new for me — they've reached out before, sent me the ZimaBoard 2 (which I thought was fantastic) and the Zima Blade. So yeah, I have history with them. I like what they make. You should know that going in. <a href="posts/meta/disclaimer.html">Read the full disclosure →</a></p>
-
-            <p>Because I got this for free, I kept thinking about the best way to share it. One video? A series? I kept coming back to the same problem: people watching a 60-second TikTok or a 10-minute YouTube video aren't going to remember the details when they're actually sitting there trying to set up their own cloud. They need something they can reference. Something they can search.</p>
-
-            <p>So I built this.</p>
-
-            <p>It's part journal, part setup guide, part "should you actually buy this?" The ZimaCube is genuinely one of my favorite pieces of hardware to come across my desk in a while, and that opinion isn't sponsored — it's just true. The thing is built beautifully, and I want to help people get the most out of it. But I'm also going to tell you when something annoys me, when a setup step makes no sense, and when I think you might want to look elsewhere.</p>
-
-            <p>If you're here because you're considering buying one, I want you to leave with enough honest information to make that decision confidently. If you're here because you already bought one and you're stuck on something basic, I want this to get you unstuck.</p>
-
+            <h1>Unboxing and First Boot</h1>
+            <p>I don't do unboxings. My channel is mostly secondhand refurbs and cheap homelab builds — the kind of hardware that arrives in a Tesco bag with a handwritten note saying "works great." So when something shows up in actual professional packaging, I notice.</p>
+            <p>The ZimaCube came from Hong Kong to the UK and the box didn't have a single dent. Inside, soft foam cradled the unit like it was something expensive. High-density foam, perfectly cut to shape, everything locked in place. It felt like unboxing an Apple product, which matches the price tag. We'll get to the price later — there's a whole conversation there.</p>
+            <p>In the box: the unit itself, a power brick with an American plug, and — this surprised me — a separate UK power lead they actually shipped just for me. A one-meter Cat 6 patch cable. Screws, standoffs, a screwdriver, instruction manuals. The full treatment.</p>
+            <p>The ZimaCube comes in two main flavours. The Standard has an i3-1215U — that's 8 cores — and the Pro steps up to an i3-1235U with a bit more power. The Pro also gets you an Aquantia 10Gb NIC on top of the dual 2.5GbE ports, so three Ethernet ports total because the PCIe bandwidth is there for it. More configs exist with different RAM amounts, but those are the big differentiators.</p>
+            <p>The drive caddies are sturdy and easy to use once assembled. I do wish they were toolless — I'm the kind of person who opens the box and wants to be running in five minutes, and having to screw drives into caddies slows that down. It's not a real problem, though. These drives aren't going anywhere for months. You've got four NVMe slots and six hard drive bays to fill.</p>
+            <h2 id="first-boot">First Boot</h2>
+            <p>I didn't connect a monitor. Didn't need to. This is what I love about Ice Whale products: ZimaOS is already on there. Plug it in, wait for it to grab an IP, and you're in. No weird ports, no serial cables.</p>
+            <p>They've got a Zima client you can download from their website. It sits in your taskbar, scans the network, finds the unit, shows you the IP address, and opens it straight in a web browser. It's that simple. For someone new to homelabs, this is the easiest first step imaginable.</p>
+            <p>Which creates a weird tension, because I don't actually think the ZimaCube is a beginner product.</p>
+            <h2 id="the-paradox">The Paradox</h2>
+            <p>ZimaOS is genuinely good. It's polished, it works, and it gets you running in minutes. But this hardware is too capable for what ZimaOS offers. You get a 256GB boot drive and nothing else — you supply your own storage. But once you fill those six hard drive bays and four NVMe slots, ZimaOS starts to feel like a bottleneck.</p>
+            <p>ZimaOS is essentially a glorified Docker deployment OS with NAS features — SMB shares, some drive management, a nice interface. For most people, that's plenty. And there is ZimaOS Plus, a $30 upgrade that unlocks more drive bays and unlimited users, which makes sense for a small business. But here's the thing: you've got 8 cores, up to 64GB of RAM, dual PCIe slots, and a 10Gb port on the Pro model. That's not "Docker and a few shares" hardware. That's "run Proxmox, virtualise TrueNAS for the ZFS filesystem, spin up a Windows Server VM for domain services, and still have headroom" hardware.</p>
+            <p>You could put a quad NIC in one of those PCIe slots. Or a low-profile GPU that doesn't need external power for Plex transcoding. This box wants to be a hypervisor, not a single-purpose NAS.</p>
+            <p>Beginners can set it up easily, yes. But the kind of person who buys a machine with this many drive bays and PCIe expansion isn't staying on ZimaOS for long. They'll outgrow it. And that's not a knock on ZimaOS — it's just that the hardware is built for more.</p>
+            <p>The thing that stuck with me most was the power brick. The unit itself is about the size of an HP ProLiant MicroServer — not huge, but not tiny. And then there's this external brick. I get the logic: if it dies, you buy another one. But looking at the case, there's empty space at the top. Just motherboard and heatsinks and air. I keep wondering what a future version looks like with an integrated, maybe even removable, power supply built into that space.</p>
+            <p>For now? It works. It's beautiful. And it got me from "cut the tape" to "logged in and browsing files" in under ten minutes. I just keep thinking about who this is actually for.</p>
+            
             <hr>
-
-            <h2 id="whats-here">What's Here</h2>
-
-            <p>A running collection of everything I've learned, broken, fixed, and wondered about while living with the ZimaCube. Pick a section below or scroll through the whole thing.</p>
-
-            <h3 id="first-impressions">First Impressions</h3>
-
-            <p>The moment it arrived. <a href="posts/first-impressions/introduction.html">Why I chose writing over video →</a> <a href="posts/first-impressions/unboxing.html">What was in the box and how first boot went →</a></p>
-
-            <h3 id="hardware">Hardware</h3>
-
-            <p>Specs, teardowns, and the physical reality of the thing. <a href="posts/hardware/overview.html">The full breakdown: CPU, RAM, storage, networking, and quirks →</a> <a href="posts/hardware/disassembly.html">Taking it apart: the fan saga, mystery standoffs, and what's inside →</a></p>
-
-            <h3 id="the-windows-server-project">The Windows Server Project</h3>
-
-            <p>The experiment that started it all. <a href="posts/windows-server/bare-metal-setup.html">How I wiped ZimaOS, installed Windows Server 2025 bare metal, and hunted for drivers →</a></p>
-
-            <h3 id="homelab-journal">Homelab Journal</h3>
-
-            <p>Operating systems, experiments, and what I'm running now. <a href="posts/homelab-journal/zimaos-review.html">Why ZimaOS is good on small devices but wrong for the Standard and Pro →</a></p>
-
-            <h3 id="meta">Meta</h3>
-
-            <p><a href="posts/meta/disclaimer.html">Full disclosure about the Zima Pioneer Programme, my history with the brand, and why you should read everything here with that bias in mind →</a></p>
-
-            <hr>
-
-            <h2 id="the-standout-experiment-so-far">The Standout Experiment So Far</h2>
-
-            <p>Treating this compact little NAS box as a bare-metal Windows Server 2025 host. It was a weird fit. That's exactly why I tried it.</p>
-
-            <p>I'm going to cover everything from first boot to whatever weird experiment I try next. Right now I'm running Proxmox, planning GPU passthrough for OBS recording and a Synology DSM VM. If something breaks, you'll hear about it.</p>
-
-            <p>That's the deal. No ads, no affiliate links, just a guy with a free NAS box and a lot of opinions about it.</p>
-
-            <p>Welcome to the project.</p>
-
+            
+            
             <div class="post-footer">
-                <em>Last updated: May 2026</em>
+                <em>May 2026</em>
+            </div>
+
+            <div class="backlinks">
+                <h3>Related Posts</h3>
+                <p class="backlinks-empty">No direct links from this post.</p>
             </div>
         </div>
     </main>
@@ -513,7 +530,7 @@
 
         // Active TOC highlighting
         function updateActiveToc() {
-            const headings = document.querySelectorAll('h2[id], h3[id]');
+            const headings = document.querySelectorAll('h2[id]');
             const tocLinks = document.querySelectorAll('.toc-list a');
             let activeId = '';
 
