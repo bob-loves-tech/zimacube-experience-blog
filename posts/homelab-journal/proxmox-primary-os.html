@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZimaCube Experience Blog</title>
+    <title>Why Proxmox Is the Only OS That Makes Sense for the ZimaCube — ZimaCube Experience Blog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -323,6 +323,25 @@
             color: inherit;
         }
 
+        /* Images */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid var(--border-light);
+            display: block;
+            margin: 24px 0;
+        }
+
+        figcaption, .image-caption {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: -16px;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
         /* Footer date */
         .post-footer {
             text-align: center;
@@ -334,6 +353,42 @@
         }
 
         .post-footer em {
+            font-style: italic;
+        }
+
+        /* Backlinks */
+        .backlinks {
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .backlinks h3 {
+            font-size: 1.125rem;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        .backlinks ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .backlinks ul li::before {
+            display: none;
+        }
+
+        .backlinks li {
+            margin-bottom: 8px;
+        }
+
+        .backlinks a {
+            font-size: 0.9375rem;
+        }
+
+        .backlinks-empty {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
             font-style: italic;
         }
 
@@ -398,13 +453,11 @@
     <div class="mobile-drawer" id="mobileDrawer">
         <div class="toc-title">Contents</div>
         <ul class="toc-list" id="mobileToc">
-            <li><a href="#whats-here">What's Here</a></li>
-            <li><a href="#first-impressions">First Impressions</a></li>
-            <li><a href="#hardware">Hardware</a></li>
-            <li><a href="#the-windows-server-project">The Windows Server Project</a></li>
-            <li><a href="#homelab-journal">Homelab Journal</a></li>
-            <li><a href="#meta">Meta</a></li>
-            <li><a href="#the-standout-experiment-so-far">The Standout Experiment So Far</a></li>
+            <li><a href="#what-i-actually-built">What I Actually Built</a></li>
+            <li><a href="#the-fleet">The Fleet</a></li>
+            <li><a href="#what-i-am-running-now">What I Am Running Now</a></li>
+            <li><a href="#what-comes-next">What Comes Next</a></li>
+            <li><a href="#my-honest-take">My Honest Take</a></li>
         </ul>
     </div>
 
@@ -412,13 +465,11 @@
     <aside class="sidebar" id="sidebar">
         <div class="toc-title">Contents</div>
         <ul class="toc-list" id="desktopToc">
-            <li><a href="#whats-here">What's Here</a></li>
-            <li><a href="#first-impressions">First Impressions</a></li>
-            <li><a href="#hardware">Hardware</a></li>
-            <li><a href="#the-windows-server-project">The Windows Server Project</a></li>
-            <li><a href="#homelab-journal">Homelab Journal</a></li>
-            <li><a href="#meta">Meta</a></li>
-            <li><a href="#the-standout-experiment-so-far">The Standout Experiment So Far</a></li>
+            <li><a href="#what-i-actually-built">What I Actually Built</a></li>
+            <li><a href="#the-fleet">The Fleet</a></li>
+            <li><a href="#what-i-am-running-now">What I Am Running Now</a></li>
+            <li><a href="#what-comes-next">What Comes Next</a></li>
+            <li><a href="#my-honest-take">My Honest Take</a></li>
         </ul>
     </aside>
 
@@ -429,62 +480,45 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="content-inner">
-            <h1>ZimaCube Experience Blog</h1>
-
-            <p>I make videos. That's what I do. I've got 66,000 people following Bob Lov's Tech on TikTok and about 1,700 on YouTube, and usually when something interesting lands on my desk, I hit record and talk into a camera.</p>
-
-            <p>But the ZimaCube made me want to write instead.</p>
-
-            <p>This little box arrived because I'm part of the Zima Pioneer Programme. Ice Whale sent it to me free. This isn't new for me — they've reached out before, sent me the ZimaBoard 2 (which I thought was fantastic) and the Zima Blade. So yeah, I have history with them. I like what they make. You should know that going in. <a href="posts/meta/disclaimer.html">Read the full disclosure →</a></p>
-
-            <p>Because I got this for free, I kept thinking about the best way to share it. One video? A series? I kept coming back to the same problem: people watching a 60-second TikTok or a 10-minute YouTube video aren't going to remember the details when they're actually sitting there trying to set up their own cloud. They need something they can reference. Something they can search.</p>
-
-            <p>So I built this.</p>
-
-            <p>It's part journal, part setup guide, part "should you actually buy this?" The ZimaCube is genuinely one of my favorite pieces of hardware to come across my desk in a while, and that opinion isn't sponsored — it's just true. The thing is built beautifully, and I want to help people get the most out of it. But I'm also going to tell you when something annoys me, when a setup step makes no sense, and when I think you might want to look elsewhere.</p>
-
-            <p>If you're here because you're considering buying one, I want you to leave with enough honest information to make that decision confidently. If you're here because you already bought one and you're stuck on something basic, I want this to get you unstuck.</p>
-
+            <h1>Why Proxmox Is the Only OS That Makes Sense for the ZimaCube</h1>
+            <p>I have wiped this machine three times now. It came with ZimaOS. Then I installed Proxmox. Then Windows Server 2025 bare metal. Then back to Proxmox again — and this time it is staying.</p>
+            <p>If you are wondering whether the ZimaCube is better off on its stock OS or something else, I can save you the experimentation. Proxmox is the answer. Not because it is flashy. Because it gets out of the way and lets the hardware do what it was built to do.</p>
+            <h2 id="what-i-actually-built">What I Actually Built</h2>
+            <p>The current setup is simple to describe and took a weekend to get right. Proxmox is the hypervisor on the ZimaCube. Inside Proxmox I run a virtualised Synology DSM instance that handles storage across the six drive bays. I should probably not tell you this — technically it sits in a grey area, and it is not something you are supposed to be doing. But it works, and it works well.</p>
+            <p>Then I mount that Synology storage back into Proxmox over NFS, which means ISOs and LXC container templates live on the NAS but show up natively inside Proxmox as if they were local volumes.</p>
+            <p>I did not know if that loop would work. Proxmox hosting a VM that provides storage back to Proxmox itself feels like a thing that should break. It does not. I set up the NFS share in Synology's interface, added the storage target in Proxmox's Datacenter > Storage panel, pointed it at the NAS IP, and it just connected. I had to look up the exact mount options — Proxmox is picky about how it talks to network storage — but once it was mounted, every ISO I drop onto the NAS appears instantly in Proxmox's template list. No more copying four-gigabyte files across the network every time I want to spin up a VM.</p>
+            <p>That alone would have been enough to make me happy. But I did not stop at one machine.</p>
+            <h2 id="the-fleet">The Fleet</h2>
+            <p>I now have three separate Proxmox hosts. The ZimaCube is the main one — the same machine I wrote about in <a href="../hardware/overview.html">the hardware overview</a> and later <a href="../hardware/disassembly.html">took apart to see what was inside</a>. An old x86 mini PC is the second. The ZimaBlade — previously running ZimaOS, now fitted with a PCIe adapter and an NVMe card — is the third. All three run Proxmox. All three point at the same Synology NAS for ISOs and container templates.</p>
+            <p>This is the part that genuinely changed how I work. Before, if I wanted to create a VM on any of those machines, I needed the ISO sitting locally on that specific host. That meant either copying the file to three locations or keeping a mental map of which ISO lived where. Now there is one copy on the NAS, and every host sees it. If I download a new server ISO or a fresh LXC template, I drop it once and it is available everywhere.</p>
+            <p>Container backups go the same direction. Every Proxmox host backs up its LXC containers to the Synology NAS. One destination. One place to check. One place to restore from. It is not a complicated setup, but it is the kind of simple that makes you wonder why you ever did it the hard way.</p>
+            <h2 id="what-i-am-running-now">What I Am Running Now</h2>
+            <p>The DNS and DHCP for my network are handled by a Technitium DNS instance running on the x86 mini PC, not the ZimaCube. I will eventually move a secondary DNS server onto the Cube itself, but for now the mini PC handles it. I picked Technitium because the interface is clean, the blocking lists are built in — no hunting for third-party blocklists — and setting up a forwarding resolver took about five minutes. It is the kind of tool that just works without needing a weekend of reading documentation.</p>
+            <p>The ZimaCube itself is handling the heavier stuff. Proxmox is the control plane. Synology DSM manages the disks. LXC containers run the services I want always-on. I am not touching Docker directly anymore if I can avoid it — an LXC container is lighter, faster to back up, and restores in seconds if something goes wrong.</p>
+            <p>This is a long way from where I started. In <a href="../first-impressions/introduction.html">my first post</a> I was still figuring out whether this blog was even worth keeping. Then I ran ZimaOS for a while and found myself <a href="zimaos-review.html">hitting its ceiling</a> — no VMs, no LXC, just Docker and file shares on hardware that was built for more. Then I went all-in on <a href="../windows-server/bare-metal-setup.html">Windows Server 2025 bare metal</a>, spent a Sunday hunting drivers, and got it working. It was good. It genuinely ran well. But every time I thought about what I wanted to do next — GPU passthrough, a dozen lightweight containers, a Synology VM — I kept bumping into walls that Proxmox does not have.</p>
+            <h2 id="what-comes-next">What Comes Next</h2>
+            <p>I have a list. Proxmox Backup Server is next — proper deduplicated backups instead of the basic dump-to-NAS I am doing now. Then I want an LXC container dedicated to coding agents, isolated from the rest of the network, with SSH access to the other hosts so it can push configuration changes without me logging in manually. The idea is to have one place where the agents live, one set of credentials they use, and one firewall rule that controls what they can reach. I am not sure yet whether that lives on the ZimaCube or the mini PC, but the container model makes it easy to move later.</p>
+            <p>GPU passthrough is still on the roadmap too. I want to add a low-profile card to the ZimaCube's PCIe slot and pass it through to a VM for OBS recording. That was one of the reasons I moved away from Windows Server in the first place — Proxmox handles passthrough on consumer hardware with far less fighting.</p>
+            <h2 id="my-honest-take">My Honest Take</h2>
+            <p>I defended Windows Server for a long time. I still think it is a good operating system, and if you are new to homelabbing and you already know Windows, the 180-day trial is a genuine gift. It teaches you Active Directory, DNS, and DHCP without making you learn a new OS first. But there is a ceiling. When you want GPU passthrough, nested virtualisation, and dozens of lightweight containers, Windows Server starts to feel like the wrong tool. It can do those things, but it does not want to.</p>
+            <p>Proxmox wants to. It was built for exactly this — a small fleet of x86 boxes, a shared storage target, and a mix of VMs and containers that you can back up, migrate, and restore without drama. The ZimaCube has six cores, forty gigabytes of RAM, six drive bays, and dual 2.5GbE networking. That is not NAS hardware. That is hypervisor hardware. And Proxmox is the only OS I have found that treats it that way out of the box.</p>
+            <p>I should have done this from day one. But then I would not have known why it was the right choice.</p>
+            
             <hr>
-
-            <h2 id="whats-here">What's Here</h2>
-
-            <p>A running collection of everything I've learned, broken, fixed, and wondered about while living with the ZimaCube. Pick a section below or scroll through the whole thing.</p>
-
-            <h3 id="first-impressions">First Impressions</h3>
-
-            <p>The moment it arrived. <a href="posts/first-impressions/introduction.html">Why I chose writing over video →</a> <a href="posts/first-impressions/unboxing.html">What was in the box and how first boot went →</a></p>
-
-            <h3 id="hardware">Hardware</h3>
-
-            <p>Specs, teardowns, and the physical reality of the thing. <a href="posts/hardware/overview.html">The full breakdown: CPU, RAM, storage, networking, and quirks →</a> <a href="posts/hardware/disassembly.html">Taking it apart: the fan saga, mystery standoffs, and what's inside →</a></p>
-
-            <h3 id="the-windows-server-project">The Windows Server Project</h3>
-
-            <p>The experiment that started it all. <a href="posts/windows-server/bare-metal-setup.html">How I wiped ZimaOS, installed Windows Server 2025 bare metal, and hunted for drivers →</a></p>
-
-            <h3 id="homelab-journal">Homelab Journal</h3>
-
-            <p>Operating systems, experiments, and what I'm running now. <a href="posts/homelab-journal/zimaos-review.html">Why ZimaOS is good on small devices but wrong for the Cube →</a> <a href="posts/homelab-journal/proxmox-primary-os.html">Why Proxmox is the only OS that makes sense — NFS-mounted Synology, a three-host fleet, and why I should have done this from day one →</a></p>
-
-            <h3 id="meta">Meta</h3>
-
-            <p><a href="posts/meta/disclaimer.html">Full disclosure about the Zima Pioneer Programme, my history with the brand, and why you should read everything here with that bias in mind →</a></p>
-
-            <hr>
-
-            <h2 id="the-standout-experiment-so-far">The Standout Experiment So Far</h2>
-
-            <p>Treating this compact little NAS box as a bare-metal Windows Server 2025 host. It was a weird fit. That's exactly why I tried it.</p>
-
-            <p>I'm going to cover everything from first boot to whatever weird experiment I try next. Right now I'm running Proxmox, planning GPU passthrough for OBS recording and a Synology DSM VM. If something breaks, you'll hear about it.</p>
-
-            <p>That's the deal. No ads, no affiliate links, just a guy with a free NAS box and a lot of opinions about it.</p>
-
-            <p>Welcome to the project.</p>
-
+            
             <div class="post-footer">
-                <em>Last updated: May 2026</em>
+                <em>May 2026</em>
+            </div>
+
+            <div class="backlinks">
+                <h3>Related Posts</h3>
+                <ul>
+                    <li><a href="zimaos-review.html">ZimaOS: Good at What It Does, Just Not for This</a> — why the stock OS was not enough</li>
+                    <li><a href="../windows-server/bare-metal-setup.html">Bare-Metal Windows Server 2025 on a NAS</a> — the experiment that preceded this</li>
+                    <li><a href="../hardware/overview.html">Hardware Overview</a> — the specs this setup is running on</li>
+                    <li><a href="../hardware/disassembly.html">Inside the ZimaCube</a> — what I found when I opened the case</li>
+                    <li><a href="../first-impressions/introduction.html">Introduction</a> — why this blog exists</li>
+                </ul>
             </div>
         </div>
     </main>
@@ -513,7 +547,7 @@
 
         // Active TOC highlighting
         function updateActiveToc() {
-            const headings = document.querySelectorAll('h2[id], h3[id]');
+            const headings = document.querySelectorAll('h2[id]');
             const tocLinks = document.querySelectorAll('.toc-list a');
             let activeId = '';
 
