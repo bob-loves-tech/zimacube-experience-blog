@@ -2,7 +2,7 @@
 
 Backups. The word itself is enough to put a room to sleep. Nobody gets excited about backups. Nobody talks about their backup strategy at dinner parties. But here I am, genuinely pleased with mine, and I think that says something about how far down the homelab rabbit hole I have gone.
 
-The irony is not lost on me. I spent months writing about the ZimaCube's hardware, its fan noise, what I would change about the design. And the thing I am most satisfied with is the one part of the setup that nobody can see.
+The irony is not lost on me. I spent months writing about the ZimaCube's [hardware](../hardware/overview.md), its [fan noise](../hardware/disassembly.md), what I would change about the design. And the thing I am most satisfied with is the one part of the setup that nobody can see.
 
 ## Proxmox Backup Server on the ZimaCube
 
@@ -14,7 +14,7 @@ I set it up to back up everything. The ZimaCube's own VMs, the Synology DSM virt
 
 Here is where it gets a bit silly, and I am fully aware of it.
 
-Proxmox Backup Server backs up to the Synology NAS. But the Synology NAS is itself a VM running on the ZimaCube — the same machine that Proxmox Backup Server is running on. So PBS backs up the Synology VM to the Synology NAS, which is the thing it is backing up to. It backs itself up, via the thing it is backing up to.
+Proxmox Backup Server backs up to the Synology NAS. But the Synology NAS is itself a VM running on the ZimaCube — the same machine that Proxmox Backup Server is running on. If you are wondering how that works, I walked through the whole Synology VM setup in [the Proxmox post](proxmox-primary-os.md). So PBS backs up the Synology VM to the Synology NAS, which is the thing it is backing up to. It backs itself up, via the thing it is backing up to.
 
 ![Proxmox Backup Server configured with Synology as the backup target](../../assets/images/pulse/Proxmox%20backup%20server%20Synology%20Backup.png)
 
@@ -30,13 +30,13 @@ It is not a perfect setup. It is a practical one. And for a homelab, practical b
 
 The Synology NAS is mounted inside Proxmox over ZFS, which means it is not just a backup target — it is part of the daily workflow. Every ISO I download, every LXC container template I grab, lives on the Synology storage but shows up natively inside Proxmox as if it were a local drive.
 
-I mentioned this in the Proxmox post, but it bears repeating because it is the kind of thing that changes how you work. Before this, if I wanted to create a VM, I needed the ISO sitting on that specific host. Now there is one copy, and every host sees it. I drop a file once and it is available everywhere.
+I mentioned this in [the Proxmox post](proxmox-primary-os.md), but it bears repeating because it is the kind of thing that changes how you work. Before this, if I wanted to create a VM, I needed the ISO sitting on that specific host. Now there is one copy, and every host sees it. I drop a file once and it is available everywhere.
 
 ## The Fleet (Such as It Is)
 
-I mentioned in the Proxmox post that I had three hosts: the ZimaCube, an x86 mini PC, and the ZimaBlade. The ZimaBlade has been switched off. I found it redundant — it was not pulling its weight, and the ZimaCube handles everything it used to do without breaking a sweat. So it sits there, powered down, waiting for a purpose I have not found yet.
+I mentioned in [the Proxmox post](proxmox-primary-os.md) that I had three hosts: the ZimaCube, an x86 mini PC, and the ZimaBlade. The ZimaBlade has been switched off. I found it redundant — it was not pulling its weight, and the ZimaCube handles everything it used to do without breaking a sweat. So it sits there, powered down, waiting for a purpose I have not found yet.
 
-That leaves two active hosts. The ZimaCube is the main one. The second is a 2014 Mac Mini — the same machine I referred to as the "x86 mini PC" in the earlier post. I did not want to call it out by name before, but it is what it is. A decade-old Apple desktop running Proxmox. It handles DNS and a couple of lightweight containers. Nothing major, but it works.
+That leaves two active hosts. The ZimaCube is the main one — the same machine I wrote about in [the hardware overview](../hardware/overview.md) and later [took apart](../hardware/disassembly.md). The second is a 2014 Mac Mini — the same machine I referred to as the "x86 mini PC" in [the earlier post](proxmox-primary-os.md). I did not want to call it out by name before, but it is what it is. A decade-old Apple desktop running Proxmox. It handles DNS and a couple of lightweight containers. Nothing major, but it works.
 
 Both hosts back up to the same Synology NAS. Both use the same ISO folder and the same container template folder. Everything flows through the ZimaCube. The Mac Mini is a satellite node — it does its own thing, but its data and its storage all point back to the same place.
 
@@ -44,7 +44,7 @@ I was not sure the Mac Mini would handle this. It is old hardware, and Proxmox i
 
 ## The Fan Noise Thing
 
-I should mention this because it came up in the hardware posts. The ZimaCube used to have a fan noise problem. I wrote about it. I complained about it. I considered hiding the thing in a closet.
+I should mention this because it came up in [the hardware posts](../hardware/disassembly.md). The ZimaCube used to have a fan noise problem. I wrote about it. I complained about it. I considered hiding the thing in a closet.
 
 Since figuring out the fan curve, it has been absolutely quiet. Not "quiet for a server" quiet. Actually quiet. I can sit in the same room as it and not hear it at all. Which means the backup jobs run at night without sounding like a jet engine warming up.
 
@@ -80,20 +80,23 @@ Right now I am backing up everything — every LXC, every VM. Eventually, as I a
 
 ## My Honest Take
 
-Backups are boring until they are not. Until the day something goes wrong and you need them, they are the most unglamorous part of any setup. But setting this up — getting PBS running, wiring in the Synology, connecting the Mac Mini, watching it all work without intervention — gave me more satisfaction than any benchmark or spec sheet ever did.
+Backups are boring until they are not. Until the day something goes wrong and you need them, they are the most unglamorous part of any setup. But setting this up — getting PBS running, wiring in the Synology, connecting the Mac Mini, watching it all work without intervention — gave me more satisfaction than any benchmark or spec sheet ever did. And more satisfaction than [chasing Windows Server drivers](../windows-server/bare-metal-setup.md), for what it is worth.
 
 The circular backup arrangement is a bit absurd. I am not pretending it is elegant. But it works, it is automated, and the data ends up in Google Cloud where it would survive even if the ZimaCube caught fire. That is good enough for me.
 
 The real win is not the backups themselves. It is the fact that I do not have to think about them. They run, they notify me if something breaks, they clean up after themselves when I destroy a VM, and they stay quiet while doing it. A backup system you have to manage is not a backup system. It is a part-time job.
 
-And the fact that the whole thing runs silently on hardware that fits on my desk? That is just a bonus.
+And the fact that the whole thing runs silently on hardware that fits on my desk? That is just a bonus. A long way from where I started with [ZimaOS](zimaos-review.md) and a lot of uncertainty about what this machine was actually for.
 
 ---
 
 **Related Posts:**
 - [Why Proxmox Is the Only OS That Makes Sense](../homelab-journal/proxmox-primary-os.md) — the setup this builds on
 - [Hardware Overview](../hardware/overview.md) — the specs this is running on
+- [Inside the ZimaCube](../hardware/disassembly.md) — the fan saga and what is inside
 - [Would I Buy It Again?](../hardware/would-i-buy-it.md) — my verdict on the ZimaCube as hardware
+- [ZimaOS: Good at What It Does](../homelab-journal/zimaos-review.md) — why the stock OS was not enough
+- [Bare-Metal Windows Server 2025](../windows-server/bare-metal-setup.md) — the experiment that preceded all of this
 
 *Written: May 2026*
 
