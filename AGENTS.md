@@ -47,8 +47,37 @@ Follow the workflow in `_private/templates/new-post-workflow.md`:
 
 Then update `README.md` to link the new post.
 
-## Commits
+## Navigation Bar
 
-- Short descriptive messages: "Write hardware overview: specs, storage, networking, and quirks"
-- Branch: `main`
-- Do not push unless the human explicitly asks
+Every HTML page has a hardcoded top navigation bar. There is no build system to auto-generate it. When you add a new post or a new folder under `posts/`, you **must** update the nav block in every `.html` file.
+
+### Current nav structure
+
+The nav mirrors the folder tree inside `posts/`:
+
+| Top-level link | Dropdown pages (files in that folder) |
+|----------------|---------------------------------------|
+| Home | `index.html` |
+| First Impressions | `introduction.html`, `unboxing.html` |
+| Hardware | `overview.html`, `disassembly.html`, `would-i-buy-it.html` |
+| Windows Server | `bare-metal-setup.html` |
+| Homelab Journal | `zimaos-review.html`, `proxmox-primary-os.html` |
+| Meta | `disclaimer.html` |
+
+### Adding a new post to an existing folder
+
+1. Add the new page link inside the existing `<div class="dropdown">` for that folder in **every** `.html` file.
+2. Remember: root pages use `posts/<folder>/<file>.html`. Post pages use `../<folder>/<file>.html`.
+
+### Adding a brand-new section (new folder under `posts/`)
+
+1. Create the new folder and add the post(s).
+2. Add a new top-level `<li>` with a `<div class="dropdown">` inside, in the nav block of **every** `.html` file.
+3. Update `README.md` and `index.html` to list the new section.
+
+### Files that contain the nav block
+
+- `index.html` (root-level links)
+- Every file under `posts/**/*.html` (relative `../` links)
+
+There are two identical nav templates — one for the root and one for posts. Update both, or copy-paste from an already-updated file.
