@@ -31,6 +31,7 @@ A running journal of my time with the [ZimaCube](https://www.zimaboard.com/) —
 ### Homelab Journal
 - [ZimaOS Review](posts/homelab-journal/zimaos-review.md) — Why it's good on small devices, wrong for the Cube
 - [Why Proxmox Is the Only OS That Makes Sense](posts/homelab-journal/proxmox-primary-os.md) — NFS-mounted Synology, a three-host fleet, and why I should have done this from day one
+- [Backups](posts/homelab-journal/backups.md) — PBS on the ZimaCube, the circular backup problem, Pulse monitoring, and why I don't have to think about it
 
 ## The Standout Experiment So Far
 
