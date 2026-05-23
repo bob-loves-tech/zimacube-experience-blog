@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Why I'm Writing This Instead of Filming It — ZimaCube Experience Blog</title>
+    <title>Six Weeks With the ZimaCube 2 — ZimaCube Experience Blog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -600,7 +600,6 @@
                     <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
                     <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
                     <a href="../homelab-journal/backups.html">Backups</a>
-                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
                 </div>
             </li>
             <li>
@@ -617,7 +616,12 @@
     <div class="mobile-drawer" id="mobileDrawer">
         <div class="toc-title">Contents</div>
         <ul class="toc-list" id="mobileToc">
-            
+            <li><a href="#the-bios-is-too-deep-and-thats-a-contradiction">The BIOS Is Too Deep</a></li>
+            <li><a href="#the-fan-gremlin">The Fan Gremlin</a></li>
+            <li><a href="#the-spring-cleaning">The Spring Cleaning</a></li>
+            <li><a href="#the-stuff-that-just-works">The Stuff That Just Works</a></li>
+            <li><a href="#whats-next">What's Next</a></li>
+            <li><a href="#would-i-buy-it-now">Would I Buy It Now?</a></li>
         </ul>
     </div>
 
@@ -625,7 +629,12 @@
     <aside class="sidebar" id="sidebar">
         <div class="toc-title">Contents</div>
         <ul class="toc-list" id="desktopToc">
-            
+            <li><a href="#the-bios-is-too-deep-and-thats-a-contradiction">The BIOS Is Too Deep</a></li>
+            <li><a href="#the-fan-gremlin">The Fan Gremlin</a></li>
+            <li><a href="#the-spring-cleaning">The Spring Cleaning</a></li>
+            <li><a href="#the-stuff-that-just-works">The Stuff That Just Works</a></li>
+            <li><a href="#whats-next">What's Next</a></li>
+            <li><a href="#would-i-buy-it-now">Would I Buy It Now?</a></li>
         </ul>
     </aside>
 
@@ -636,28 +645,82 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="content-inner">
-            <h1>Why I'm Writing This Instead of Filming It</h1>
-            <p>I make videos. That's what I do. I've got 66,000 people following Bob Lov's Tech on TikTok and about 1,700 on YouTube, and usually when something interesting lands on my desk, I hit record and talk into a camera.</p>
-            <p>But the ZimaCube made me want to write instead.</p>
-            <p>This little box arrived because I'm part of the Zima Pioneer Programme. Ice Whale sent it to me free. This isn't new for me — they've reached out before, sent me the ZimaBoard 2 (which I thought was fantastic) and the Zima Blade. So yeah, I have history with them. I like what they make. You should know that going in. <a href="../meta/disclaimer.html">Read the full disclosure →</a></p>
-            <p>Because I got this for free, I kept thinking about the best way to share it. One video? A series? I kept coming back to the same problem: people watching a 60-second TikTok or a 10-minute YouTube video aren't going to remember the details when they're actually sitting there trying to set up their own cloud. They need something they can reference. Something they can search.</p>
-            <p>So I built this repo.</p>
-            <p>It's part journal, part setup guide, part "should you actually buy this?" The ZimaCube is genuinely one of my favorite pieces of hardware to come across my desk in a while, and that opinion isn't sponsored — it's just true. The thing is built beautifully, and I want to help people get the most out of it. But I'm also going to tell you when something annoys me, when a setup step makes no sense, and when I think you might want to look elsewhere.</p>
-            <p>If you're here because you're considering buying one, I want you to leave with enough honest information to make that decision confidently. If you're here because you already bought one and you're stuck on something basic, I want this to get you unstuck.</p>
-            <p>I'm going to cover everything from first boot to whatever weird experiment I try next. Right now I'm running Windows Server 2025 on it bare metal, which is probably overkill and definitely weird. I'll explain why later.</p>
-            <p>That's the deal. No ads, no affiliate links, just a guy with a free NAS box and a lot of opinions about it.</p>
-            <p>Welcome to the project.</p>
-            
-            <hr>
-            
-            
+            <h1>Six Weeks With the ZimaCube 2 — What Changed and What Didn't</h1>
+
+            <p>I put out my honest take on the ZimaCube 2 about six weeks ago. "Probably not at $800 bare bones" was the headline. That hasn't changed.</p>
+
+            <p>But six weeks of daily use changes what you notice. The first review was first impressions — the hardware tour, the price math, the barrel jack complaint. This is what happens when you stop reviewing and start living with it.</p>
+
+            <h2 id="the-bios-is-too-deep-and-thats-a-contradiction">The BIOS Is Too Deep (and That's a Contradiction)</h2>
+
+            <p>The BIOS on this thing is exhaustive. I mean that almost literally — it's exhausting to go through. It feels like a server board BIOS where you can control every voltage, every memory timing, every PCIe lane assignment, every fan header. If you know what you're doing, you could spend hours in there.</p>
+
+            <p>If you don't? Hope you enjoy googling.</p>
+
+            <p>And here's the contradiction: the ZimaCube is sold as a plug-and-play device. You buy it, turn it on, ZimaOS is running, you're done. But the BIOS screams "this is a serious machine for people who know what an ACS override is." Those two personalities don't match.</p>
+
+            <p>I'm not mad it's there. I actually prefer having the options. But I'm not sure the target buyer needs them. If you're running ZimaOS, you're probably never touching the BIOS. If you're running <a href="../../posts/homelab-journal/proxmox-primary-os.html">Proxmox</a> — like I am — you're in there constantly, and you're glad every option exists. Pick your lane.</p>
+
+            <h2 id="the-fan-gremlin">The Fan Gremlin</h2>
+
+            <p>A few weeks ago we had a power cut. The ZimaCube went down hard. When it came back up, the fan was running at full speed and would not stop.</p>
+
+            <p>Not "a bit loud." Full belt. The kind of noise that makes you look over at the rack to check if something's on fire.</p>
+
+            <p>I checked the BIOS fan settings. I checked <a href="../../posts/homelab-journal/monitoring-the-fleet.html">Pulse</a> for thermal readings. Nothing was hot. The fan profile just wasn't applying anymore.</p>
+
+            <p>The fix? Turn it off, wait a few seconds, turn it back on. After a proper restart, the fans went back to their normal whisper. Something about the unclean shutdown threw the fan controller into a state it couldn't recover from without a full power drain.</p>
+
+            <p>That's annoying. I don't want to spin down a production machine just to shut a fan up. And it's not the first time the fan behaviour has felt unpredictable — the auto-profiles sometimes kick in, sometimes don't. I wrote about the internals including the fan in the <a href="../../posts/hardware/disassembly.html">disassembly post</a>, and this is the one part that still doesn't feel fully engineered.</p>
+
+            <h2 id="the-spring-cleaning">The Spring Cleaning</h2>
+
+            <p>I spun up a bunch of Docker containers when I first got this thing. The usual suspects — all the things you want to try when you have a new box with six drive bays. A Proxmox management container here, a data manager there, a few tools I thought I'd use.</p>
+
+            <p>I killed most of them last week. Not because I ran out of RAM — I've got about 20GB free and the CPU barely breaks a sweat. I killed them because I wasn't using them. The ZimaCube is plenty powerful enough. The question isn't "can it run this?" It's "do I actually need this running?"</p>
+
+            <p>The <a href="../../posts/homelab-journal/monitoring-the-fleet.html">Hermes agent</a> in an LXC container — that's what I'm actually using. And <a href="../../posts/homelab-journal/monitoring-the-fleet.html">Pulse</a>. And the <a href="../../posts/homelab-journal/proxmox-primary-os.html">Synology DSM VM</a>. Everything else was noise. The fleet architecture is covered in the <a href="../../posts/homelab-journal/proxmox-primary-os.html">Proxmox post</a> and the <a href="../../posts/homelab-journal/monitoring-the-fleet.html">monitoring overview</a>, but the short version is: this machine runs what I need, and what I don't need gets shut down.</p>
+
+            <h2 id="the-stuff-that-just-works">The Stuff That Just Works</h2>
+
+            <p>The <a href="../../posts/homelab-journal/proxmox-primary-os.html">Synology DSM VM</a> on the ZimaCube has been absolutely rock solid. Zero issues. It's connected to all my Proxmox hosts over NFS, serving ISOs and container templates without drama. I haven't had a single notification about it.</p>
+
+            <p><a href="../../posts/homelab-journal/monitoring-the-fleet.html">Pulse</a> runs as an LXC container on the ZimaCube and monitors both Proxmox hosts. It checks backup status on PBS, tracks CPU and RAM per guest, and generally stays out of the way until something needs attention. I covered how Pulse connects to everything — the API discovery, the per-guest metrics, the backup stats — in the <a href="../../posts/homelab-journal/monitoring-the-fleet.html">monitoring post</a>. It's the tool I open every morning and it's never let me down.</p>
+
+            <p>The <a href="../../posts/homelab-journal/backups.html">backup chain</a> has been running without a hitch too. PBS on the ZimaCube, deduplicated, automated, and I don't have to think about it.</p>
+
+            <h2 id="whats-next">What's Next</h2>
+
+            <p>I'm planning to push this machine further. The roadmap:</p>
+
+            <ul>
+                <li><strong>Virtualise my router.</strong> The ZimaCube has <a href="../../posts/hardware/overview.html">dual 2.5GbE ports</a>. An OPNsense VM with one core and 4GB of RAM would be comically overkill for my connection — and that's exactly why I want to do it. Headroom is the point.</li>
+                <li><strong>Thunderbolt.</strong> I don't have a Thunderbolt host anymore, but the two Thunderbolt 4 ports on the back would give me direct-attached NVMe speeds that make NFS look pedestrian. Not in the budget yet, but it's on the board.</li>
+                <li><strong>More LXCs, fewer Docker containers.</strong> I've moved most services to LXC containers. Lighter, faster to back up, restores in seconds. The shift I started in the <a href="../../posts/homelab-journal/proxmox-primary-os.html">Proxmox post</a> is nearly complete.</li>
+            </ul>
+
+            <h2 id="would-i-buy-it-now">Would I Buy It Now?</h2>
+
+            <p>Same answer as last time. Probably not at $800 bare bones. I'm still too cheap and too comfortable building my own. If you want the full breakdown of why, the <a href="../../posts/hardware/would-i-buy-it.html">original review</a> has all the math.</p>
+
+            <p>But I'm glad I have it. And I'm more convinced than I was six weeks ago that this isn't a NAS — it's a proper little server that happens to also hold your drives. The <a href="../../posts/hardware/overview.html">hardware overview</a> and <a href="../../posts/hardware/disassembly.html">disassembly</a> posts cover what's inside and why it matters. The BIOS is too deep, the fan has a gremlin, and the contradictions between plug-and-play and power-user are real.</p>
+
+            <p>But for a machine that fits in one hand and runs my entire network? I'll take the trade-offs.</p>
+
             <div class="post-footer">
-                <em>May 2026</em>
+                <em>Written: May 2026</em>
             </div>
 
             <div class="backlinks">
                 <h3>Related Posts</h3>
-                <p class="backlinks-empty">No direct links from this post.</p>
+                <ul>
+                    <li><a href="../../posts/hardware/would-i-buy-it.html">Would I Buy the ZimaCube 2 With My Own Money?</a> — the original review this follows up on</li>
+                    <li><a href="../../posts/homelab-journal/proxmox-primary-os.html">Why Proxmox Is the Only OS That Makes Sense</a> — the Synology VM and NFS loop that makes the ZimaCube a proper server</li>
+                    <li><a href="../../posts/homelab-journal/monitoring-the-fleet.html">Watching the Fleet</a> — Pulse, monitoring, and the AI agent idea</li>
+                    <li><a href="../../posts/homelab-journal/backups.html">Backups</a> — PBS on the ZimaCube and the backup chain</li>
+                    <li><a href="../../posts/hardware/overview.html">Hardware Overview</a> — full specs including the dual 2.5GbE and Thunderbolt 4 ports</li>
+                    <li><a href="../../posts/hardware/disassembly.html">Taking It Apart</a> — inside the case, including the fan situation and the barrel jack power supply</li>
+                </ul>
             </div>
         </div>
     </main>
