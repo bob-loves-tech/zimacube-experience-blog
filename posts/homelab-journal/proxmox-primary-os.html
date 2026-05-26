@@ -1,739 +1,738 @@
-     1|<!DOCTYPE html>
-     2|<html lang="en">
-     3|<head>
-     4|    <meta charset="UTF-8">
-     5|    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     6|    <title>Why Proxmox Is the Only OS That Makes Sense for the ZimaCube — ZimaCube Experience Blog</title>
-     7|    <link rel="preconnect" href="https://fonts.googleapis.com">
-     8|    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-     9|    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    10|    <style>
-    11|        :root {
-    12|            --bg-primary: #FAFAF8;
-    13|            --bg-secondary: #F5F5F2;
-    14|            --text-primary: #1A1A1A;
-    15|            --text-secondary: #6B6B6B;
-    16|            --text-muted: #9E9E9E;
-    17|            --accent: #6D28D9;
-    18|            --accent-hover: #5B21B6;
-    19|            --accent-tint: rgba(109, 40, 217, 0.06);
-    20|            --border-light: #E5E5E5;
-    21|            --border-accent: #6D28D9;
-    22|            --content-max: 720px;
-    23|            --sidebar-width: 260px;
-    24|            --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-    25|            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    26|        }
-    27|
-    28|        *, *::before, *::after {
-    29|            box-sizing: border-box;
-    30|            margin: 0;
-    31|            padding: 0;
-    32|        }
-    33|
-    34|        html {
-    35|            scroll-behavior: smooth;
-    36|        }
-    37|
-    38|        body {
-    39|            font-family: var(--font-body);
-    40|            font-size: 1.125rem;
-    41|            line-height: 1.65;
-    42|            color: var(--text-primary);
-    43|            background: var(--bg-primary);
-    44|            -webkit-font-smoothing: antialiased;
-    45|            -moz-osx-font-smoothing: grayscale;
-    46|        }
-    47|
-    48|        /* Layout */
-    49|        .page-wrapper {
-    50|            display: flex;
-    51|            min-height: 100vh;
-    52|        }
-    53|
-    54|        .sidebar {
-    55|            width: var(--sidebar-width);
-    56|            position: fixed;
-    57|            top: 0;
-    58|            left: 0;
-    59|            height: 100vh;
-    60|            background: var(--bg-secondary);
-    61|            border-right: 1px solid var(--border-light);
-    62|            padding: 32px 24px;
-    63|            overflow-y: auto;
-    64|            z-index: 100;
-    65|            transition: transform 0.3s ease;
-    66|        }
-    67|
-    68|        .sidebar.collapsed {
-    69|            transform: translateX(-100%);
-    70|        }
-    71|
-    72|        .main-content {
-    73|            flex: 1;
-    74|            margin-left: var(--sidebar-width);
-    75|            padding: 48px 24px;
-    76|            max-width: calc(var(--content-max) + 48px);
-    77|        }
-    78|
-    79|        .content-inner {
-    80|            max-width: var(--content-max);
-    81|            margin: 0 auto;
-    82|        }
-    83|
-    84|        /* Mobile drawer */
-    85|        .drawer-overlay {
-    86|            display: none;
-    87|            position: fixed;
-    88|            top: 0;
-    89|            left: 0;
-    90|            width: 100%;
-    91|            height: 100%;
-    92|            background: rgba(0,0,0,0.3);
-    93|            z-index: 199;
-    94|        }
-    95|
-    96|        .drawer-overlay.active {
-    97|            display: block;
-    98|        }
-    99|
-   100|        .mobile-drawer {
-   101|            display: none;
-   102|            position: fixed;
-   103|            top: 0;
-   104|            right: 0;
-   105|            width: 280px;
-   106|            height: 100vh;
-   107|            background: var(--bg-primary);
-   108|            border-left: 1px solid var(--border-light);
-   109|            padding: 24px;
-   110|            z-index: 200;
-   111|            overflow-y: auto;
-   112|            transform: translateX(100%);
-   113|            transition: transform 0.3s ease;
-   114|        }
-   115|
-   116|        .mobile-drawer.active {
-   117|            transform: translateX(0);
-   118|        }
-   119|
-   120|        /* Toggle buttons */
-   121|        .toggle-btn {
-   122|            position: fixed;
-   123|            top: 16px;
-   124|            z-index: 150;
-   125|            background: var(--bg-primary);
-   126|            border: 1px solid var(--border-light);
-   127|            border-radius: 4px;
-   128|            padding: 8px 12px;
-   129|            cursor: pointer;
-   130|            font-family: var(--font-body);
-   131|            font-size: 0.875rem;
-   132|            color: var(--text-secondary);
-   133|            transition: all 0.2s;
-   134|        }
-   135|
-   136|        .toggle-btn:hover {
-   137|            border-color: var(--accent);
-   138|            color: var(--accent);
-   139|        }
-   140|
-   141|        .sidebar-toggle {
-   142|            left: calc(var(--sidebar-width) + 16px);
-   143|        }
-   144|
-   145|        .sidebar.collapsed + .main-content .sidebar-toggle {
-   146|            left: 16px;
-   147|        }
-   148|
-   149|        .hamburger-btn {
-   150|            display: none;
-   151|            right: 16px;
-   152|            top: 16px;
-   153|        }
-   154|
-   155|        /* TOC */
-   156|        .toc-title {
-   157|            font-family: var(--font-heading);
-   158|            font-size: 1rem;
-   159|            font-weight: 600;
-   160|            color: var(--text-primary);
-   161|            margin-bottom: 16px;
-   162|            letter-spacing: -0.01em;
-   163|        }
-   164|
-   165|        .toc-list {
-   166|            list-style: none;
-   167|        }
-   168|
-   169|        .toc-list li {
-   170|            margin-bottom: 8px;
-   171|        }
-   172|
-   173|        .toc-list li::before {
-   174|            display: none;
-   175|        }
-   176|
-   177|        .toc-list a {
-   178|            text-decoration: none;
-   179|            color: var(--text-secondary);
-   180|            font-size: 0.875rem;
-   181|            display: block;
-   182|            padding: 4px 0;
-   183|            border-left: 2px solid transparent;
-   184|            padding-left: 12px;
-   185|            transition: all 0.2s;
-   186|        }
-   187|
-   188|        .toc-list a:hover {
-   189|            color: var(--accent);
-   190|        }
-   191|
-   192|        .toc-list a.active {
-   193|            color: var(--accent);
-   194|            border-left-color: var(--accent);
-   195|            font-weight: 500;
-   196|        }
-   197|
-   198|        .toc-list a.h3 {
-   199|            padding-left: 24px;
-   200|            font-size: 0.8125rem;
-   201|        }
-   202|
-   203|        /* Typography */
-   204|        h1 {
-   205|            font-family: var(--font-heading);
-   206|            font-size: 2.5rem;
-   207|            font-weight: 700;
-   208|            line-height: 1.2;
-   209|            letter-spacing: -0.02em;
-   210|            color: var(--text-primary);
-   211|            margin-bottom: 32px;
-   212|        }
-   213|
-   214|        h2 {
-   215|            font-family: var(--font-heading);
-   216|            font-size: 1.75rem;
-   217|            font-weight: 600;
-   218|            line-height: 1.3;
-   219|            letter-spacing: -0.01em;
-   220|            color: var(--text-primary);
-   221|            margin-top: 48px;
-   222|            margin-bottom: 20px;
-   223|            scroll-margin-top: 24px;
-   224|        }
-   225|
-   226|        h3 {
-   227|            font-family: var(--font-body);
-   228|            font-size: 1.25rem;
-   229|            font-weight: 600;
-   230|            line-height: 1.4;
-   231|            color: var(--text-primary);
-   232|            margin-top: 32px;
-   233|            margin-bottom: 16px;
-   234|            scroll-margin-top: 24px;
-   235|        }
-   236|
-   237|        p {
-   238|            margin-bottom: 20px;
-   239|        }
-   240|
-   241|        a {
-   242|            color: var(--accent);
-   243|            text-decoration: none;
-   244|            transition: color 0.2s;
-   245|        }
-   246|
-   247|        a:hover {
-   248|            color: var(--accent-hover);
-   249|            text-decoration: underline;
-   250|        }
-   251|
-   252|        hr {
-   253|            border: none;
-   254|            border-top: 1px solid var(--border-light);
-   255|            margin: 48px 0;
-   256|            text-align: center;
-   257|        }
-   258|
-   259|        /* Lists */
-   260|        ul, ol {
-   261|            margin-bottom: 20px;
-   262|            padding-left: 24px;
-   263|        }
-   264|
-   265|        li {
-   266|            margin-bottom: 8px;
-   267|        }
-   268|
-   269|        ul {
-   270|            list-style: none;
-   271|        }
-   272|
-   273|        ul li::before {
-   274|            content: "";
-   275|            display: inline-block;
-   276|            width: 6px;
-   277|            height: 6px;
-   278|            background: var(--accent);
-   279|            margin-left: -18px;
-   280|            margin-right: 12px;
-   281|            vertical-align: middle;
-   282|        }
-   283|
-   284|        /* Blockquote */
-   285|        blockquote {
-   286|            border-left: 3px solid var(--border-accent);
-   287|            background: var(--accent-tint);
-   288|            padding: 16px 20px;
-   289|            margin: 24px 0;
-   290|            font-style: italic;
-   291|            border-radius: 0 4px 4px 0;
-   292|        }
-   293|
-   294|        blockquote p:last-child {
-   295|            margin-bottom: 0;
-   296|        }
-   297|
-   298|        /* Code */
-   299|        code {
-   300|            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
-   301|            font-size: 0.9375rem;
-   302|            background: #F0F0EE;
-   303|            padding: 2px 6px;
-   304|            border-radius: 3px;
-   305|            color: var(--text-primary);
-   306|        }
-   307|
-   308|        pre {
-   309|            background: #1E1E1E;
-   310|            color: #E4E4E4;
-   311|            padding: 16px 20px;
-   312|            border-radius: 4px;
-   313|            overflow-x: auto;
-   314|            margin-bottom: 20px;
-   315|            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
-   316|            font-size: 0.9375rem;
-   317|            line-height: 1.6;
-   318|        }
-   319|
-   320|        pre code {
-   321|            background: transparent;
-   322|            padding: 0;
-   323|            color: inherit;
-   324|        }
-   325|
-   326|        /* Images */
-   327|        img {
-   328|            max-width: 100%;
-   329|            height: auto;
-   330|            border-radius: 4px;
-   331|            border: 1px solid var(--border-light);
-   332|            display: block;
-   333|            margin: 24px 0;
-   334|        }
-   335|
-   336|        figcaption, .image-caption {
-   337|            text-align: center;
-   338|            color: var(--text-secondary);
-   339|            font-size: 0.875rem;
-   340|            margin-top: -16px;
-   341|            margin-bottom: 24px;
-   342|            font-style: italic;
-   343|        }
-   344|
-   345|        /* Footer date */
-   346|        .post-footer {
-   347|            text-align: center;
-   348|            color: var(--text-muted);
-   349|            font-size: 0.875rem;
-   350|            margin-top: 48px;
-   351|            padding-top: 24px;
-   352|            border-top: 1px solid var(--border-light);
-   353|        }
-   354|
-   355|        .post-footer em {
-   356|            font-style: italic;
-   357|        }
-   358|
-   359|        /* Backlinks */
-   360|        .backlinks {
-   361|            margin-top: 48px;
-   362|            padding-top: 32px;
-   363|            border-top: 1px solid var(--border-light);
-   364|        }
-   365|
-   366|        .backlinks h3 {
-   367|            font-size: 1.125rem;
-   368|            margin-top: 0;
-   369|            margin-bottom: 16px;
-   370|        }
-   371|
-   372|        .backlinks ul {
-   373|            list-style: none;
-   374|            padding-left: 0;
-   375|        }
-   376|
-   377|        .backlinks ul li::before {
-   378|            display: none;
-   379|        }
-   380|
-   381|        .backlinks li {
-   382|            margin-bottom: 8px;
-   383|        }
-   384|
-   385|        .backlinks a {
-   386|            font-size: 0.9375rem;
-   387|        }
-   388|
-   389|        .backlinks-empty {
-   390|            color: var(--text-muted);
-   391|            font-size: 0.9375rem;
-   392|            font-style: italic;
-   393|        }
-   394|
-   395|        /* Responsive */
-   396|        @media (max-width: 1023px) {
-   397|            .sidebar {
-   398|                display: none;
-   399|            }
-   400|
-   401|            .main-content {
-   402|                margin-left: 0;
-   403|                padding: 64px 24px 48px;
-   404|            }
-   405|
-   406|            .sidebar-toggle {
-   407|                display: none;
-   408|            }
-   409|
-   410|            .hamburger-btn {
-   411|                display: block;
-   412|            }
-   413|
-   414|            .mobile-drawer {
-   415|                display: block;
-   416|            }
-   417|
-   418|            h1 {
-   419|                font-size: 2rem;
-   420|            }
-   421|
-   422|            h2 {
-   423|                font-size: 1.5rem;
-   424|            }
-   425|        }
-   426|
-   427|        @media (max-width: 767px) {
-   428|            body {
-   429|                font-size: 1rem;
-   430|            }
-   431|
-   432|            .main-content {
-   433|                padding: 64px 16px 48px;
-   434|            }
-   435|
-   436|            h1 {
-   437|                font-size: 1.75rem;
-   438|            }
-   439|
-   440|            h2 {
-   441|                font-size: 1.375rem;
-   442|            }
-   443|
-   444|            h3 {
-   445|                font-size: 1.125rem;
-   446|            }
-   447|        }
-   448|        /* Top Navigation */
-   449|        .top-nav {
-   450|            width: 100%;
-   451|            background: var(--bg-secondary);
-   452|            border-bottom: 1px solid var(--border-light);
-   453|            padding: 16px 24px;
-   454|            display: flex;
-   455|            align-items: center;
-   456|            justify-content: flex-start;
-   457|            flex-wrap: wrap;
-   458|            gap: 32px;
-   459|        }
-   460|
-   461|        .nav-brand {
-   462|            font-family: var(--font-heading);
-   463|            font-size: 1.25rem;
-   464|            font-weight: 600;
-   465|            color: var(--text-primary);
-   466|            text-decoration: none;
-   467|            letter-spacing: -0.01em;
-   468|            white-space: nowrap;
-   469|        }
-   470|
-   471|        .nav-brand:hover {
-   472|            color: var(--accent);
-   473|            text-decoration: none;
-   474|        }
-   475|
-   476|        .nav-menu {
-   477|            display: flex;
-   478|            list-style: none;
-   479|            padding: 0;
-   480|            margin: 0;
-   481|            gap: 0;
-   482|        }
-   483|
-   484|        .nav-menu li {
-   485|            margin: 0;
-   486|            position: relative;
-   487|        }
-   488|
-   489|        .nav-menu li::before {
-   490|            display: none;
-   491|        }
-   492|
-   493|        .nav-menu > li > a {
-   494|            font-family: var(--font-body);
-   495|            font-size: 0.9375rem;
-   496|            font-weight: 500;
-   497|            color: var(--text-secondary);
-   498|            text-decoration: none;
-   499|            padding: 8px 16px;
-   500|            display: block;
-   501|            transition: color 0.2s, background 0.2s;
-   502|            border-radius: 4px;
-   503|        }
-   504|
-   505|        .nav-menu > li > a:hover {
-   506|            color: var(--accent);
-   507|            background: var(--accent-tint);
-   508|        }
-   509|
-   510|        /* Dropdown */
-   511|        .dropdown {
-   512|            display: none;
-   513|            position: absolute;
-   514|            top: 100%;
-   515|            left: 0;
-   516|            background: var(--bg-primary);
-   517|            border: 1px solid var(--border-light);
-   518|            border-radius: 4px;
-   519|            min-width: 220px;
-   520|            padding: 8px 0;
-   521|            z-index: 300;
-   522|        }
-   523|
-   524|        .nav-menu li:hover .dropdown {
-   525|            display: block;
-   526|        }
-   527|
-   528|        .dropdown a {
-   529|            font-family: var(--font-body);
-   530|            font-size: 0.875rem;
-   531|            color: var(--text-secondary);
-   532|            text-decoration: none;
-   533|            padding: 8px 20px;
-   534|            display: block;
-   535|            transition: color 0.2s, background 0.2s;
-   536|        }
-   537|
-   538|        .dropdown a:hover {
-   539|            color: var(--accent);
-   540|            background: var(--accent-tint);
-   541|        }
-   542|
-   543|        .toggle-btn {
-   544|            top: 72px;
-   545|        }
-   546|
-   547|        .hamburger-btn {
-   548|            top: 72px;
-   549|        }
-   550|
-   551|        @media (max-width: 767px) {
-   552|            .top-nav {
-   553|                padding: 12px 16px;
-   554|                gap: 16px;
-   555|            }
-   556|            .nav-brand {
-   557|                font-size: 1.125rem;
-   558|            }
-   559|            .nav-menu > li > a {
-   560|                font-size: 0.875rem;
-   561|                padding: 6px 10px;
-   562|            }
-   563|            .dropdown {
-   564|                min-width: 180px;
-   565|            }
-   566|        }
-   567|
-   568|    </style>
-   569|</head>
-   570|<body>
-   571|    <nav class="top-nav">
-   572|        <a href="../../index.html" class="nav-brand">ZimaCube Experience Blog</a>
-   573|        <ul class="nav-menu">
-   574|            <li><a href="../../index.html">Home</a></li>
-   575|            <li>
-   576|                <a href="../first-impressions/introduction.html">First Impressions</a>
-   577|                <div class="dropdown">
-   578|                    <a href="../first-impressions/introduction.html">Introduction</a>
-   579|                    <a href="../first-impressions/unboxing.html">Unboxing</a>
-   580|                </div>
-   581|            </li>
-   582|            <li>
-   583|                <a href="../hardware/overview.html">Hardware</a>
-   584|                <div class="dropdown">
-   585|                    <a href="../hardware/overview.html">Overview</a>
-   586|                    <a href="../hardware/disassembly.html">Taking It Apart</a>
-   587|                    <a href="../hardware/would-i-buy-it.html">Would I Buy It?</a>
-   588|                    <a href="../hardware/six-weeks-later.html">Six Weeks Later</a>
-   589|                </div>
-   590|            </li>
-   591|            <li>
-   592|                <a href="../windows-server/bare-metal-setup.html">Windows Server</a>
-   593|                <div class="dropdown">
-   594|                    <a href="../windows-server/bare-metal-setup.html">Bare-Metal Setup</a>
-   595|                </div>
-   596|            </li>
-   597|            <li>
-   598|                <a href="../homelab-journal/proxmox-primary-os.html">Homelab Journal</a>
-   599|                <div class="dropdown">
-   600|                    <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
-   601|                    <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
-   602|                    <a href="../homelab-journal/backups.html">Backups</a>
-   603|                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Proxmox Is the Only OS That Makes Sense for the ZimaCube — ZimaCube Experience Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FAFAF8;
+            --bg-secondary: #F5F5F2;
+            --text-primary: #1A1A1A;
+            --text-secondary: #6B6B6B;
+            --text-muted: #9E9E9E;
+            --accent: #6D28D9;
+            --accent-hover: #5B21B6;
+            --accent-tint: rgba(109, 40, 217, 0.06);
+            --border-light: #E5E5E5;
+            --border-accent: #6D28D9;
+            --content-max: 720px;
+            --sidebar-width: 260px;
+            --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: 1.125rem;
+            line-height: 1.65;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-light);
+            padding: 32px 24px;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 48px 24px;
+            max-width: calc(var(--content-max) + 48px);
+        }
+
+        .content-inner {
+            max-width: var(--content-max);
+            margin: 0 auto;
+        }
+
+        /* Mobile drawer */
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            z-index: 199;
+        }
+
+        .drawer-overlay.active {
+            display: block;
+        }
+
+        .mobile-drawer {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-primary);
+            border-left: 1px solid var(--border-light);
+            padding: 24px;
+            z-index: 200;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-drawer.active {
+            transform: translateX(0);
+        }
+
+        /* Toggle buttons */
+        .toggle-btn {
+            position: fixed;
+            top: 16px;
+            z-index: 150;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .sidebar-toggle {
+            left: calc(var(--sidebar-width) + 16px);
+        }
+
+        .sidebar.collapsed + .main-content .sidebar-toggle {
+            left: 16px;
+        }
+
+        .hamburger-btn {
+            display: none;
+            right: 16px;
+            top: 16px;
+        }
+
+        /* TOC */
+        .toc-title {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            letter-spacing: -0.01em;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-list li {
+            margin-bottom: 8px;
+        }
+
+        .toc-list li::before {
+            display: none;
+        }
+
+        .toc-list a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            display: block;
+            padding: 4px 0;
+            border-left: 2px solid transparent;
+            padding-left: 12px;
+            transition: all 0.2s;
+        }
+
+        .toc-list a:hover {
+            color: var(--accent);
+        }
+
+        .toc-list a.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 500;
+        }
+
+        .toc-list a.h3 {
+            padding-left: 24px;
+            font-size: 0.8125rem;
+        }
+
+        /* Typography */
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: 1.75rem;
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+            margin-top: 48px;
+            margin-bottom: 20px;
+            scroll-margin-top: 24px;
+        }
+
+        h3 {
+            font-family: var(--font-body);
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-primary);
+            margin-top: 32px;
+            margin-bottom: 16px;
+            scroll-margin-top: 24px;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-light);
+            margin: 48px 0;
+            text-align: center;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        ul li::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            margin-left: -18px;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+
+        /* Blockquote */
+        blockquote {
+            border-left: 3px solid var(--border-accent);
+            background: var(--accent-tint);
+            padding: 16px 20px;
+            margin: 24px 0;
+            font-style: italic;
+            border-radius: 0 4px 4px 0;
+        }
+
+        blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+            font-size: 0.9375rem;
+            background: #F0F0EE;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--text-primary);
+        }
+
+        pre {
+            background: #1E1E1E;
+            color: #E4E4E4;
+            padding: 16px 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* Images */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid var(--border-light);
+            display: block;
+            margin: 24px 0;
+        }
+
+        figcaption, .image-caption {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: -16px;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        /* Footer date */
+        .post-footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .post-footer em {
+            font-style: italic;
+        }
+
+        /* Backlinks */
+        .backlinks {
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .backlinks h3 {
+            font-size: 1.125rem;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        .backlinks ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .backlinks ul li::before {
+            display: none;
+        }
+
+        .backlinks li {
+            margin-bottom: 8px;
+        }
+
+        .backlinks a {
+            font-size: 0.9375rem;
+        }
+
+        .backlinks-empty {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 1023px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 64px 24px 48px;
+            }
+
+            .sidebar-toggle {
+                display: none;
+            }
+
+            .hamburger-btn {
+                display: block;
+            }
+
+            .mobile-drawer {
+                display: block;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 767px) {
+            body {
+                font-size: 1rem;
+            }
+
+            .main-content {
+                padding: 64px 16px 48px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            h2 {
+                font-size: 1.375rem;
+            }
+
+            h3 {
+                font-size: 1.125rem;
+            }
+        }
+        /* Top Navigation */
+        .top-nav {
+            width: 100%;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 32px;
+        }
+
+        .nav-brand {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+
+        .nav-brand:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 0;
+        }
+
+        .nav-menu li {
+            margin: 0;
+            position: relative;
+        }
+
+        .nav-menu li::before {
+            display: none;
+        }
+
+        .nav-menu > li > a {
+            font-family: var(--font-body);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            display: block;
+            transition: color 0.2s, background 0.2s;
+            border-radius: 4px;
+        }
+
+        .nav-menu > li > a:hover {
+            color: var(--accent);
+            background: var(--accent-tint);
+        }
+
+        /* Dropdown */
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            min-width: 220px;
+            padding: 8px 0;
+            z-index: 300;
+        }
+
+        .nav-menu li:hover .dropdown {
+            display: block;
+        }
+
+        .dropdown a {
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 20px;
+            display: block;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .dropdown a:hover {
+            color: var(--accent);
+            background: var(--accent-tint);
+        }
+
+        .toggle-btn {
+            top: 72px;
+        }
+
+        .hamburger-btn {
+            top: 72px;
+        }
+
+        @media (max-width: 767px) {
+            .top-nav {
+                padding: 12px 16px;
+                gap: 16px;
+            }
+            .nav-brand {
+                font-size: 1.125rem;
+            }
+            .nav-menu > li > a {
+                font-size: 0.875rem;
+                padding: 6px 10px;
+            }
+            .dropdown {
+                min-width: 180px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="../../index.html" class="nav-brand">ZimaCube Experience Blog</a>
+        <ul class="nav-menu">
+            <li><a href="../../index.html">Home</a></li>
+            <li>
+                <a href="../first-impressions/introduction.html">First Impressions</a>
+                <div class="dropdown">
+                    <a href="../first-impressions/introduction.html">Introduction</a>
+                    <a href="../first-impressions/unboxing.html">Unboxing</a>
+                </div>
+            </li>
+            <li>
+                <a href="../hardware/overview.html">Hardware</a>
+                <div class="dropdown">
+                    <a href="../hardware/overview.html">Overview</a>
+                    <a href="../hardware/disassembly.html">Taking It Apart</a>
+                    <a href="../hardware/would-i-buy-it.html">Would I Buy It?</a>
+                    <a href="../hardware/six-weeks-later.html">Six Weeks Later</a>
+                </div>
+            </li>
+            <li>
+                <a href="../windows-server/bare-metal-setup.html">Windows Server</a>
+                <div class="dropdown">
+                    <a href="../windows-server/bare-metal-setup.html">Bare-Metal Setup</a>
+                </div>
+            </li>
+            <li>
+                <a href="../homelab-journal/proxmox-primary-os.html">Homelab Journal</a>
+                <div class="dropdown">
+                    <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
+                    <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
+                    <a href="../homelab-journal/backups.html">Backups</a>
+                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
                     <a href="../homelab-journal/hermes-agent-on-zimacube.html">Hermes Agent</a>
-   604|                </div>
-   605|            </li>
-   606|            <li>
-   607|                <a href="../meta/disclaimer.html">Meta</a>
-   608|                <div class="dropdown">
-   609|                    <a href="../meta/disclaimer.html">Full Disclosure</a>
-   610|                </div>
-   611|            </li>
-   612|        </ul>
-   613|    </nav>
-   614|
-   615|    <!-- Mobile Drawer -->
-   616|    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-   617|    <div class="mobile-drawer" id="mobileDrawer">
-   618|        <div class="toc-title">Contents</div>
-   619|        <ul class="toc-list" id="mobileToc">
-   620|            <li><a href="#what-i-actually-built">What I Actually Built</a></li>
-   621|            <li><a href="#the-fleet">The Fleet</a></li>
-   622|            <li><a href="#what-i-am-running-now">What I Am Running Now</a></li>
-   623|            <li><a href="#what-comes-next">What Comes Next</a></li>
-   624|            <li><a href="#my-honest-take">My Honest Take</a></li>
-   625|        </ul>
-   626|    </div>
-   627|
-   628|    <!-- Desktop Sidebar -->
-   629|    <aside class="sidebar" id="sidebar">
-   630|        <div class="toc-title">Contents</div>
-   631|        <ul class="toc-list" id="desktopToc">
-   632|            <li><a href="#what-i-actually-built">What I Actually Built</a></li>
-   633|            <li><a href="#the-fleet">The Fleet</a></li>
-   634|            <li><a href="#what-i-am-running-now">What I Am Running Now</a></li>
-   635|            <li><a href="#what-comes-next">What Comes Next</a></li>
-   636|            <li><a href="#my-honest-take">My Honest Take</a></li>
-   637|        </ul>
-   638|    </aside>
-   639|
-   640|    <!-- Toggle Buttons -->
-   641|    <button class="toggle-btn sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">⊗</button>
-   642|    <button class="toggle-btn hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" title="Open contents">☰</button>
-   643|
-   644|    <!-- Main Content -->
-   645|    <main class="main-content">
-   646|        <div class="content-inner">
-   647|            <h1>Why Proxmox Is the Only OS That Makes Sense for the ZimaCube</h1>
-   648|            <p>I have wiped this machine three times now. It came with ZimaOS. Then I installed Proxmox. Then Windows Server 2025 bare metal. Then back to Proxmox again — and this time it is staying.</p>
-   649|            <p>If you are wondering whether the ZimaCube is better off on its stock OS or something else, I can save you the experimentation. Proxmox is the answer. Not because it is flashy. Because it gets out of the way and lets the hardware do what it was built to do.</p>
-   650|            <h2 id="what-i-actually-built">What I Actually Built</h2>
-   651|            <p>The current setup is simple to describe and took a weekend to get right. Proxmox is the hypervisor on the ZimaCube. Inside Proxmox I run a virtualised Synology DSM instance that handles storage across the six drive bays. I should probably not tell you this — technically it sits in a grey area, and it is not something you are supposed to be doing. But it works, and it works well.</p>
-   652|            <p>Then I mount that Synology storage back into Proxmox over NFS, which means ISOs and LXC container templates live on the NAS but show up natively inside Proxmox as if they were local volumes.</p>
-   653|            <p>I did not know if that loop would work. Proxmox hosting a VM that provides storage back to Proxmox itself feels like a thing that should break. It does not. I set up the NFS share in Synology's interface, added the storage target in Proxmox's Datacenter > Storage panel, pointed it at the NAS IP, and it just connected. I had to look up the exact mount options — Proxmox is picky about how it talks to network storage — but once it was mounted, every ISO I drop onto the NAS appears instantly in Proxmox's template list. No more copying four-gigabyte files across the network every time I want to spin up a VM.</p>
-   654|            <p>That alone would have been enough to make me happy. But I did not stop at one machine.</p>
-   655|            <h2 id="the-fleet">The Fleet</h2>
-   656|            <p>I now have three separate Proxmox hosts. The ZimaCube is the main one — the same machine I wrote about in <a href="../hardware/overview.html">the hardware overview</a> and later <a href="../hardware/disassembly.html">took apart to see what was inside</a>. An old x86 mini PC is the second. The ZimaBlade — previously running ZimaOS, now fitted with a PCIe adapter and an NVMe card — is the third. All three run Proxmox. All three point at the same Synology NAS for ISOs and container templates.</p>
-   657|            <p>This is the part that genuinely changed how I work. Before, if I wanted to create a VM on any of those machines, I needed the ISO sitting locally on that specific host. That meant either copying the file to three locations or keeping a mental map of which ISO lived where. Now there is one copy on the NAS, and every host sees it. If I download a new server ISO or a fresh LXC template, I drop it once and it is available everywhere.</p>
-   658|            <p>Container backups go the same direction. Every Proxmox host backs up its LXC containers to the Synology NAS. One destination. One place to check. One place to restore from. It is not a complicated setup, but it is the kind of simple that makes you wonder why you ever did it the hard way.</p>
-   659|            <h2 id="what-i-am-running-now">What I Am Running Now</h2>
-   660|            <p>The DNS and DHCP for my network are handled by a Technitium DNS instance running on the x86 mini PC, not the ZimaCube. I will eventually move a secondary DNS server onto the Cube itself, but for now the mini PC handles it. I picked Technitium because the interface is clean, the blocking lists are built in — no hunting for third-party blocklists — and setting up a forwarding resolver took about five minutes. It is the kind of tool that just works without needing a weekend of reading documentation.</p>
-   661|            <p>The ZimaCube itself is handling the heavier stuff. Proxmox is the control plane. Synology DSM manages the disks. LXC containers run the services I want always-on. I am not touching Docker directly anymore if I can avoid it — an LXC container is lighter, faster to back up, and restores in seconds if something goes wrong.</p>
-   662|            <p>This is a long way from where I started. In <a href="../first-impressions/introduction.html">my first post</a> I was still figuring out whether this blog was even worth keeping. Then I ran ZimaOS for a while and found myself <a href="zimaos-review.html">hitting its ceiling</a> — no VMs, no LXC, just Docker and file shares on hardware that was built for more. Then I went all-in on <a href="../windows-server/bare-metal-setup.html">Windows Server 2025 bare metal</a>, spent a Sunday hunting drivers, and got it working. It was good. It genuinely ran well. But every time I thought about what I wanted to do next — GPU passthrough, a dozen lightweight containers, a Synology VM — I kept bumping into walls that Proxmox does not have.</p>
-   663|            <h2 id="what-comes-next">What Comes Next</h2>
-   664|            <p>I have a list. Proxmox Backup Server is next — proper deduplicated backups instead of the basic dump-to-NAS I am doing now. Then I want an LXC container dedicated to coding agents, isolated from the rest of the network, with SSH access to the other hosts so it can push configuration changes without me logging in manually. The idea is to have one place where the agents live, one set of credentials they use, and one firewall rule that controls what they can reach. I am not sure yet whether that lives on the ZimaCube or the mini PC, but the container model makes it easy to move later.</p>
-   665|            <p>GPU passthrough is still on the roadmap too. I want to add a low-profile card to the ZimaCube's PCIe slot and pass it through to a VM for OBS recording. That was one of the reasons I moved away from Windows Server in the first place — Proxmox handles passthrough on consumer hardware with far less fighting.</p>
-   666|            <h2 id="my-honest-take">My Honest Take</h2>
-   667|            <p>I defended Windows Server for a long time. I still think it is a good operating system, and if you are new to homelabbing and you already know Windows, the 180-day trial is a genuine gift. It teaches you Active Directory, DNS, and DHCP without making you learn a new OS first. But there is a ceiling. When you want GPU passthrough, nested virtualisation, and dozens of lightweight containers, Windows Server starts to feel like the wrong tool. It can do those things, but it does not want to.</p>
-   668|            <p>Proxmox wants to. It was built for exactly this — a small fleet of x86 boxes, a shared storage target, and a mix of VMs and containers that you can back up, migrate, and restore without drama. The ZimaCube has six cores, forty gigabytes of RAM, six drive bays, and dual 2.5GbE networking. That is not NAS hardware. That is hypervisor hardware. And Proxmox is the only OS I have found that treats it that way out of the box.</p>
-   669|            <p>I should have done this from day one. But then I would not have known why it was the right choice.</p>
-   670|            
-   671|            <hr>
-   672|            
-   673|            <div class="post-footer">
-   674|                <em>May 2026</em>
-   675|            </div>
-   676|
-   677|            <div class="backlinks">
-   678|                <h3>Related Posts</h3>
-   679|                <ul>
-   680|                    <li><a href="zimaos-review.html">ZimaOS: Good at What It Does, Just Not for This</a> — why the stock OS was not enough</li>
-   681|                    <li><a href="../windows-server/bare-metal-setup.html">Bare-Metal Windows Server 2025 on a NAS</a> — the experiment that preceded this</li>
-   682|                    <li><a href="../hardware/overview.html">Hardware Overview</a> — the specs this setup is running on</li>
-   683|                    <li><a href="../hardware/disassembly.html">Inside the ZimaCube</a> — what I found when I opened the case</li>
-   684|                    <li><a href="../first-impressions/introduction.html">Introduction</a> — why this blog exists</li>
-   685|                </ul>
-   686|            </div>
-   687|        </div>
-   688|    </main>
-   689|
-   690|    <script>
-   691|        // Sidebar toggle (desktop)
-   692|        function toggleSidebar() {
-   693|            const sidebar = document.getElementById('sidebar');
-   694|            sidebar.classList.toggle('collapsed');
-   695|            const btn = document.getElementById('sidebarToggle');
-   696|            btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '⊗';
-   697|        }
-   698|
-   699|        // Mobile drawer
-   700|        function openDrawer() {
-   701|            document.getElementById('mobileDrawer').classList.add('active');
-   702|            document.getElementById('drawerOverlay').classList.add('active');
-   703|            document.body.style.overflow = 'hidden';
-   704|        }
-   705|
-   706|        function closeDrawer() {
-   707|            document.getElementById('mobileDrawer').classList.remove('active');
-   708|            document.getElementById('drawerOverlay').classList.remove('active');
-   709|            document.body.style.overflow = '';
-   710|        }
-   711|
-   712|        // Active TOC highlighting
-   713|        function updateActiveToc() {
-   714|            const headings = document.querySelectorAll('h2[id]');
-   715|            const tocLinks = document.querySelectorAll('.toc-list a');
-   716|            let activeId = '';
-   717|
-   718|            headings.forEach(heading => {
-   719|                const rect = heading.getBoundingClientRect();
-   720|                if (rect.top <= 100) {
-   721|                    activeId = heading.id;
-   722|                }
-   723|            });
-   724|
-   725|            tocLinks.forEach(link => {
-   726|                link.classList.remove('active');
-   727|                if (activeId && link.getAttribute('href') === '#' + activeId) {
-   728|                    link.classList.add('active');
-   729|                }
-   730|            });
-   731|        }
-   732|
-   733|        window.addEventListener('scroll', updateActiveToc);
-   734|        updateActiveToc();
-   735|    </script>
-   736|</body>
-   737|</html>
-   738|
+                </div>
+            </li>
+            <li>
+                <a href="../meta/disclaimer.html">Meta</a>
+                <div class="dropdown">
+                    <a href="../meta/disclaimer.html">Full Disclosure</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Mobile Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="toc-title">Contents</div>
+        <ul class="toc-list" id="mobileToc">
+            <li><a href="#what-i-actually-built">What I Actually Built</a></li>
+            <li><a href="#the-fleet">The Fleet</a></li>
+            <li><a href="#what-i-am-running-now">What I Am Running Now</a></li>
+            <li><a href="#what-comes-next">What Comes Next</a></li>
+            <li><a href="#my-honest-take">My Honest Take</a></li>
+        </ul>
+    </div>
+
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="toc-title">Contents</div>
+        <ul class="toc-list" id="desktopToc">
+            <li><a href="#what-i-actually-built">What I Actually Built</a></li>
+            <li><a href="#the-fleet">The Fleet</a></li>
+            <li><a href="#what-i-am-running-now">What I Am Running Now</a></li>
+            <li><a href="#what-comes-next">What Comes Next</a></li>
+            <li><a href="#my-honest-take">My Honest Take</a></li>
+        </ul>
+    </aside>
+
+    <!-- Toggle Buttons -->
+    <button class="toggle-btn sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">⊗</button>
+    <button class="toggle-btn hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" title="Open contents">☰</button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-inner">
+            <h1>Why Proxmox Is the Only OS That Makes Sense for the ZimaCube</h1>
+            <p>I have wiped this machine three times now. It came with ZimaOS. Then I installed Proxmox. Then Windows Server 2025 bare metal. Then back to Proxmox again — and this time it is staying.</p>
+            <p>If you are wondering whether the ZimaCube is better off on its stock OS or something else, I can save you the experimentation. Proxmox is the answer. Not because it is flashy. Because it gets out of the way and lets the hardware do what it was built to do.</p>
+            <h2 id="what-i-actually-built">What I Actually Built</h2>
+            <p>The current setup is simple to describe and took a weekend to get right. Proxmox is the hypervisor on the ZimaCube. Inside Proxmox I run a virtualised Synology DSM instance that handles storage across the six drive bays. I should probably not tell you this — technically it sits in a grey area, and it is not something you are supposed to be doing. But it works, and it works well.</p>
+            <p>Then I mount that Synology storage back into Proxmox over NFS, which means ISOs and LXC container templates live on the NAS but show up natively inside Proxmox as if they were local volumes.</p>
+            <p>I did not know if that loop would work. Proxmox hosting a VM that provides storage back to Proxmox itself feels like a thing that should break. It does not. I set up the NFS share in Synology's interface, added the storage target in Proxmox's Datacenter > Storage panel, pointed it at the NAS IP, and it just connected. I had to look up the exact mount options — Proxmox is picky about how it talks to network storage — but once it was mounted, every ISO I drop onto the NAS appears instantly in Proxmox's template list. No more copying four-gigabyte files across the network every time I want to spin up a VM.</p>
+            <p>That alone would have been enough to make me happy. But I did not stop at one machine.</p>
+            <h2 id="the-fleet">The Fleet</h2>
+            <p>I now have three separate Proxmox hosts. The ZimaCube is the main one — the same machine I wrote about in <a href="../hardware/overview.html">the hardware overview</a> and later <a href="../hardware/disassembly.html">took apart to see what was inside</a>. An old x86 mini PC is the second. The ZimaBlade — previously running ZimaOS, now fitted with a PCIe adapter and an NVMe card — is the third. All three run Proxmox. All three point at the same Synology NAS for ISOs and container templates.</p>
+            <p>This is the part that genuinely changed how I work. Before, if I wanted to create a VM on any of those machines, I needed the ISO sitting locally on that specific host. That meant either copying the file to three locations or keeping a mental map of which ISO lived where. Now there is one copy on the NAS, and every host sees it. If I download a new server ISO or a fresh LXC template, I drop it once and it is available everywhere.</p>
+            <p>Container backups go the same direction. Every Proxmox host backs up its LXC containers to the Synology NAS. One destination. One place to check. One place to restore from. It is not a complicated setup, but it is the kind of simple that makes you wonder why you ever did it the hard way.</p>
+            <h2 id="what-i-am-running-now">What I Am Running Now</h2>
+            <p>The DNS and DHCP for my network are handled by a Technitium DNS instance running on the x86 mini PC, not the ZimaCube. I will eventually move a secondary DNS server onto the Cube itself, but for now the mini PC handles it. I picked Technitium because the interface is clean, the blocking lists are built in — no hunting for third-party blocklists — and setting up a forwarding resolver took about five minutes. It is the kind of tool that just works without needing a weekend of reading documentation.</p>
+            <p>The ZimaCube itself is handling the heavier stuff. Proxmox is the control plane. Synology DSM manages the disks. LXC containers run the services I want always-on. I am not touching Docker directly anymore if I can avoid it — an LXC container is lighter, faster to back up, and restores in seconds if something goes wrong.</p>
+            <p>This is a long way from where I started. In <a href="../first-impressions/introduction.html">my first post</a> I was still figuring out whether this blog was even worth keeping. Then I ran ZimaOS for a while and found myself <a href="zimaos-review.html">hitting its ceiling</a> — no VMs, no LXC, just Docker and file shares on hardware that was built for more. Then I went all-in on <a href="../windows-server/bare-metal-setup.html">Windows Server 2025 bare metal</a>, spent a Sunday hunting drivers, and got it working. It was good. It genuinely ran well. But every time I thought about what I wanted to do next — GPU passthrough, a dozen lightweight containers, a Synology VM — I kept bumping into walls that Proxmox does not have.</p>
+            <h2 id="what-comes-next">What Comes Next</h2>
+            <p>I have a list. Proxmox Backup Server is next — proper deduplicated backups instead of the basic dump-to-NAS I am doing now. Then I want an LXC container dedicated to coding agents, isolated from the rest of the network, with SSH access to the other hosts so it can push configuration changes without me logging in manually. The idea is to have one place where the agents live, one set of credentials they use, and one firewall rule that controls what they can reach. I am not sure yet whether that lives on the ZimaCube or the mini PC, but the container model makes it easy to move later.</p>
+            <p>GPU passthrough is still on the roadmap too. I want to add a low-profile card to the ZimaCube's PCIe slot and pass it through to a VM for OBS recording. That was one of the reasons I moved away from Windows Server in the first place — Proxmox handles passthrough on consumer hardware with far less fighting.</p>
+            <h2 id="my-honest-take">My Honest Take</h2>
+            <p>I defended Windows Server for a long time. I still think it is a good operating system, and if you are new to homelabbing and you already know Windows, the 180-day trial is a genuine gift. It teaches you Active Directory, DNS, and DHCP without making you learn a new OS first. But there is a ceiling. When you want GPU passthrough, nested virtualisation, and dozens of lightweight containers, Windows Server starts to feel like the wrong tool. It can do those things, but it does not want to.</p>
+            <p>Proxmox wants to. It was built for exactly this — a small fleet of x86 boxes, a shared storage target, and a mix of VMs and containers that you can back up, migrate, and restore without drama. The ZimaCube has six cores, forty gigabytes of RAM, six drive bays, and dual 2.5GbE networking. That is not NAS hardware. That is hypervisor hardware. And Proxmox is the only OS I have found that treats it that way out of the box.</p>
+            <p>I should have done this from day one. But then I would not have known why it was the right choice.</p>
+            
+            <hr>
+            
+            <div class="post-footer">
+                <em>May 2026</em>
+            </div>
+
+            <div class="backlinks">
+                <h3>Related Posts</h3>
+                <ul>
+                    <li><a href="zimaos-review.html">ZimaOS: Good at What It Does, Just Not for This</a> — why the stock OS was not enough</li>
+                    <li><a href="../windows-server/bare-metal-setup.html">Bare-Metal Windows Server 2025 on a NAS</a> — the experiment that preceded this</li>
+                    <li><a href="../hardware/overview.html">Hardware Overview</a> — the specs this setup is running on</li>
+                    <li><a href="../hardware/disassembly.html">Inside the ZimaCube</a> — what I found when I opened the case</li>
+                    <li><a href="../first-impressions/introduction.html">Introduction</a> — why this blog exists</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Sidebar toggle (desktop)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+            const btn = document.getElementById('sidebarToggle');
+            btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '⊗';
+        }
+
+        // Mobile drawer
+        function openDrawer() {
+            document.getElementById('mobileDrawer').classList.add('active');
+            document.getElementById('drawerOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDrawer() {
+            document.getElementById('mobileDrawer').classList.remove('active');
+            document.getElementById('drawerOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Active TOC highlighting
+        function updateActiveToc() {
+            const headings = document.querySelectorAll('h2[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+            let activeId = '';
+
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    activeId = heading.id;
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (activeId && link.getAttribute('href') === '#' + activeId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveToc);
+        updateActiveToc();
+    </script>
+</body>
+</html>

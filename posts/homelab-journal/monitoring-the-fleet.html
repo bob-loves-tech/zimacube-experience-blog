@@ -1,764 +1,763 @@
-     1|<!DOCTYPE html>
-     2|<html lang="en">
-     3|<head>
-     4|    <meta charset="UTF-8">
-     5|    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     6|    <title>Watching the Fleet: What Does a One-Man Homelab Actually Need? — ZimaCube Experience Blog</title>
-     7|    <link rel="preconnect" href="https://fonts.googleapis.com">
-     8|    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-     9|    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    10|    <style>
-    11|        :root {
-    12|            --bg-primary: #FAFAF8;
-    13|            --bg-secondary: #F5F5F2;
-    14|            --text-primary: #1A1A1A;
-    15|            --text-secondary: #6B6B6B;
-    16|            --text-muted: #9E9E9E;
-    17|            --accent: #6D28D9;
-    18|            --accent-hover: #5B21B6;
-    19|            --accent-tint: rgba(109, 40, 217, 0.06);
-    20|            --border-light: #E5E5E5;
-    21|            --border-accent: #6D28D9;
-    22|            --content-max: 720px;
-    23|            --sidebar-width: 260px;
-    24|            --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-    25|            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    26|        }
-    27|
-    28|        *, *::before, *::after {
-    29|            box-sizing: border-box;
-    30|            margin: 0;
-    31|            padding: 0;
-    32|        }
-    33|
-    34|        html {
-    35|            scroll-behavior: smooth;
-    36|        }
-    37|
-    38|        body {
-    39|            font-family: var(--font-body);
-    40|            font-size: 1.125rem;
-    41|            line-height: 1.65;
-    42|            color: var(--text-primary);
-    43|            background: var(--bg-primary);
-    44|            -webkit-font-smoothing: antialiased;
-    45|            -moz-osx-font-smoothing: grayscale;
-    46|        }
-    47|
-    48|        /* Layout */
-    49|        .page-wrapper {
-    50|            display: flex;
-    51|            min-height: 100vh;
-    52|        }
-    53|
-    54|        .sidebar {
-    55|            width: var(--sidebar-width);
-    56|            position: fixed;
-    57|            top: 0;
-    58|            left: 0;
-    59|            height: 100vh;
-    60|            background: var(--bg-secondary);
-    61|            border-right: 1px solid var(--border-light);
-    62|            padding: 32px 24px;
-    63|            overflow-y: auto;
-    64|            z-index: 100;
-    65|            transition: transform 0.3s ease;
-    66|        }
-    67|
-    68|        .sidebar.collapsed {
-    69|            transform: translateX(-100%);
-    70|        }
-    71|
-    72|        .main-content {
-    73|            flex: 1;
-    74|            margin-left: var(--sidebar-width);
-    75|            padding: 48px 24px;
-    76|            max-width: calc(var(--content-max) + 48px);
-    77|        }
-    78|
-    79|        .content-inner {
-    80|            max-width: var(--content-max);
-    81|            margin: 0 auto;
-    82|        }
-    83|
-    84|        /* Mobile drawer */
-    85|        .drawer-overlay {
-    86|            display: none;
-    87|            position: fixed;
-    88|            top: 0;
-    89|            left: 0;
-    90|            width: 100%;
-    91|            height: 100%;
-    92|            background: rgba(0,0,0,0.3);
-    93|            z-index: 199;
-    94|        }
-    95|
-    96|        .drawer-overlay.active {
-    97|            display: block;
-    98|        }
-    99|
-   100|        .mobile-drawer {
-   101|            display: none;
-   102|            position: fixed;
-   103|            top: 0;
-   104|            right: 0;
-   105|            width: 280px;
-   106|            height: 100vh;
-   107|            background: var(--bg-primary);
-   108|            border-left: 1px solid var(--border-light);
-   109|            padding: 24px;
-   110|            z-index: 200;
-   111|            overflow-y: auto;
-   112|            transform: translateX(100%);
-   113|            transition: transform 0.3s ease;
-   114|        }
-   115|
-   116|        .mobile-drawer.active {
-   117|            transform: translateX(0);
-   118|        }
-   119|
-   120|        /* Toggle buttons */
-   121|        .toggle-btn {
-   122|            position: fixed;
-   123|            top: 16px;
-   124|            z-index: 150;
-   125|            background: var(--bg-primary);
-   126|            border: 1px solid var(--border-light);
-   127|            border-radius: 4px;
-   128|            padding: 8px 12px;
-   129|            cursor: pointer;
-   130|            font-family: var(--font-body);
-   131|            font-size: 0.875rem;
-   132|            color: var(--text-secondary);
-   133|            transition: all 0.2s;
-   134|        }
-   135|
-   136|        .toggle-btn:hover {
-   137|            border-color: var(--accent);
-   138|            color: var(--accent);
-   139|        }
-   140|
-   141|        .sidebar-toggle {
-   142|            left: calc(var(--sidebar-width) + 16px);
-   143|        }
-   144|
-   145|        .sidebar.collapsed + .main-content .sidebar-toggle {
-   146|            left: 16px;
-   147|        }
-   148|
-   149|        .hamburger-btn {
-   150|            display: none;
-   151|            right: 16px;
-   152|            top: 16px;
-   153|        }
-   154|
-   155|        /* TOC */
-   156|        .toc-title {
-   157|            font-family: var(--font-heading);
-   158|            font-size: 1rem;
-   159|            font-weight: 600;
-   160|            color: var(--text-primary);
-   161|            margin-bottom: 16px;
-   162|            letter-spacing: -0.01em;
-   163|        }
-   164|
-   165|        .toc-list {
-   166|            list-style: none;
-   167|        }
-   168|
-   169|        .toc-list li {
-   170|            margin-bottom: 8px;
-   171|        }
-   172|
-   173|        .toc-list li::before {
-   174|            display: none;
-   175|        }
-   176|
-   177|        .toc-list a {
-   178|            text-decoration: none;
-   179|            color: var(--text-secondary);
-   180|            font-size: 0.875rem;
-   181|            display: block;
-   182|            padding: 4px 0;
-   183|            border-left: 2px solid transparent;
-   184|            padding-left: 12px;
-   185|            transition: all 0.2s;
-   186|        }
-   187|
-   188|        .toc-list a:hover {
-   189|            color: var(--accent);
-   190|        }
-   191|
-   192|        .toc-list a.active {
-   193|            color: var(--accent);
-   194|            border-left-color: var(--accent);
-   195|            font-weight: 500;
-   196|        }
-   197|
-   198|        .toc-list a.h3 {
-   199|            padding-left: 24px;
-   200|            font-size: 0.8125rem;
-   201|        }
-   202|
-   203|        /* Typography */
-   204|        h1 {
-   205|            font-family: var(--font-heading);
-   206|            font-size: 2.5rem;
-   207|            font-weight: 700;
-   208|            line-height: 1.2;
-   209|            letter-spacing: -0.02em;
-   210|            color: var(--text-primary);
-   211|            margin-bottom: 32px;
-   212|        }
-   213|
-   214|        h2 {
-   215|            font-family: var(--font-heading);
-   216|            font-size: 1.75rem;
-   217|            font-weight: 600;
-   218|            line-height: 1.3;
-   219|            letter-spacing: -0.01em;
-   220|            color: var(--text-primary);
-   221|            margin-top: 48px;
-   222|            margin-bottom: 20px;
-   223|            scroll-margin-top: 24px;
-   224|        }
-   225|
-   226|        h3 {
-   227|            font-family: var(--font-body);
-   228|            font-size: 1.25rem;
-   229|            font-weight: 600;
-   230|            line-height: 1.4;
-   231|            color: var(--text-primary);
-   232|            margin-top: 32px;
-   233|            margin-bottom: 16px;
-   234|            scroll-margin-top: 24px;
-   235|        }
-   236|
-   237|        p {
-   238|            margin-bottom: 20px;
-   239|        }
-   240|
-   241|        a {
-   242|            color: var(--accent);
-   243|            text-decoration: none;
-   244|            transition: color 0.2s;
-   245|        }
-   246|
-   247|        a:hover {
-   248|            color: var(--accent-hover);
-   249|            text-decoration: underline;
-   250|        }
-   251|
-   252|        hr {
-   253|            border: none;
-   254|            border-top: 1px solid var(--border-light);
-   255|            margin: 48px 0;
-   256|            text-align: center;
-   257|        }
-   258|
-   259|        /* Lists */
-   260|        ul, ol {
-   261|            margin-bottom: 20px;
-   262|            padding-left: 24px;
-   263|        }
-   264|
-   265|        li {
-   266|            margin-bottom: 8px;
-   267|        }
-   268|
-   269|        ul {
-   270|            list-style: none;
-   271|        }
-   272|
-   273|        ul li::before {
-   274|            content: "";
-   275|            display: inline-block;
-   276|            width: 6px;
-   277|            height: 6px;
-   278|            background: var(--accent);
-   279|            margin-left: -18px;
-   280|            margin-right: 12px;
-   281|            vertical-align: middle;
-   282|        }
-   283|
-   284|        /* Blockquote */
-   285|        blockquote {
-   286|            border-left: 3px solid var(--border-accent);
-   287|            background: var(--accent-tint);
-   288|            padding: 16px 20px;
-   289|            margin: 24px 0;
-   290|            font-style: italic;
-   291|            border-radius: 0 4px 4px 0;
-   292|        }
-   293|
-   294|        blockquote p:last-child {
-   295|            margin-bottom: 0;
-   296|        }
-   297|
-   298|        /* Code */
-   299|        code {
-   300|            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
-   301|            font-size: 0.9375rem;
-   302|            background: #F0F0EE;
-   303|            padding: 2px 6px;
-   304|            border-radius: 3px;
-   305|            color: var(--text-primary);
-   306|        }
-   307|
-   308|        pre {
-   309|            background: #1E1E1E;
-   310|            color: #E4E4E4;
-   311|            padding: 16px 20px;
-   312|            border-radius: 4px;
-   313|            overflow-x: auto;
-   314|            margin-bottom: 20px;
-   315|            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
-   316|            font-size: 0.9375rem;
-   317|            line-height: 1.6;
-   318|        }
-   319|
-   320|        pre code {
-   321|            background: transparent;
-   322|            padding: 0;
-   323|            color: inherit;
-   324|        }
-   325|
-   326|        /* Footer date */
-   327|        .post-footer {
-   328|            text-align: center;
-   329|            color: var(--text-muted);
-   330|            font-size: 0.875rem;
-   331|            margin-top: 48px;
-   332|            padding-top: 24px;
-   333|            border-top: 1px solid var(--border-light);
-   334|        }
-   335|
-   336|        .post-footer em {
-   337|            font-style: italic;
-   338|        }
-   339|
-   340|        /* Backlinks */
-   341|        .backlinks {
-   342|            margin-top: 48px;
-   343|            padding-top: 24px;
-   344|            border-top: 1px solid var(--border-light);
-   345|        }
-   346|
-   347|        .backlinks h3 {
-   348|            font-family: var(--font-heading);
-   349|            font-size: 1.25rem;
-   350|            font-weight: 600;
-   351|            margin-bottom: 16px;
-   352|        }
-   353|
-   354|        .backlinks ul {
-   355|            padding-left: 0;
-   356|        }
-   357|
-   358|        .backlinks ul li::before {
-   359|            display: none;
-   360|        }
-   361|
-   362|        .backlinks ul li {
-   363|            margin-bottom: 8px;
-   364|        }
-   365|
-   366|        /* Responsive */
-   367|        @media (max-width: 1023px) {
-   368|            .sidebar {
-   369|                display: none;
-   370|            }
-   371|
-   372|            .main-content {
-   373|                margin-left: 0;
-   374|                padding: 64px 24px 48px;
-   375|            }
-   376|
-   377|            .sidebar-toggle {
-   378|                display: none;
-   379|            }
-   380|
-   381|            .hamburger-btn {
-   382|                display: block;
-   383|            }
-   384|
-   385|            .mobile-drawer {
-   386|                display: block;
-   387|            }
-   388|
-   389|            h1 {
-   390|                font-size: 2rem;
-   391|            }
-   392|
-   393|            h2 {
-   394|                font-size: 1.5rem;
-   395|            }
-   396|        }
-   397|
-   398|        @media (max-width: 767px) {
-   399|            body {
-   400|                font-size: 1rem;
-   401|            }
-   402|
-   403|            .main-content {
-   404|                padding: 64px 16px 48px;
-   405|            }
-   406|
-   407|            h1 {
-   408|                font-size: 1.75rem;
-   409|            }
-   410|
-   411|            h2 {
-   412|                font-size: 1.375rem;
-   413|            }
-   414|
-   415|            h3 {
-   416|                font-size: 1.125rem;
-   417|            }
-   418|        }
-   419|        /* Top Navigation */
-   420|        .top-nav {
-   421|            width: 100%;
-   422|            background: var(--bg-secondary);
-   423|            border-bottom: 1px solid var(--border-light);
-   424|            padding: 16px 24px;
-   425|            display: flex;
-   426|            align-items: center;
-   427|            justify-content: flex-start;
-   428|            flex-wrap: wrap;
-   429|            gap: 32px;
-   430|        }
-   431|
-   432|        .nav-brand {
-   433|            font-family: var(--font-heading);
-   434|            font-size: 1.25rem;
-   435|            font-weight: 600;
-   436|            color: var(--text-primary);
-   437|            text-decoration: none;
-   438|            letter-spacing: -0.01em;
-   439|            white-space: nowrap;
-   440|        }
-   441|
-   442|        .nav-brand:hover {
-   443|            color: var(--accent);
-   444|            text-decoration: none;
-   445|        }
-   446|
-   447|        .nav-menu {
-   448|            display: flex;
-   449|            list-style: none;
-   450|            padding: 0;
-   451|            margin: 0;
-   452|            gap: 0;
-   453|        }
-   454|
-   455|        .nav-menu li {
-   456|            margin: 0;
-   457|            position: relative;
-   458|        }
-   459|
-   460|        .nav-menu li::before {
-   461|            display: none;
-   462|        }
-   463|
-   464|        .nav-menu > li > a {
-   465|            font-family: var(--font-body);
-   466|            font-size: 0.9375rem;
-   467|            font-weight: 500;
-   468|            color: var(--text-secondary);
-   469|            text-decoration: none;
-   470|            padding: 8px 16px;
-   471|            display: block;
-   472|            transition: color 0.2s, background 0.2s;
-   473|            border-radius: 4px;
-   474|        }
-   475|
-   476|        .nav-menu > li > a:hover {
-   477|            color: var(--accent);
-   478|            background: var(--accent-tint);
-   479|        }
-   480|
-   481|        /* Dropdown */
-   482|        .dropdown {
-   483|            display: none;
-   484|            position: absolute;
-   485|            top: 100%;
-   486|            left: 0;
-   487|            background: var(--bg-primary);
-   488|            border: 1px solid var(--border-light);
-   489|            border-radius: 4px;
-   490|            min-width: 220px;
-   491|            padding: 8px 0;
-   492|            z-index: 300;
-   493|        }
-   494|
-   495|        .nav-menu li:hover .dropdown {
-   496|            display: block;
-   497|        }
-   498|
-   499|        .dropdown a {
-   500|            font-family: var(--font-body);
-   501|            font-size: 0.875rem;
-   502|            color: var(--text-secondary);
-   503|            text-decoration: none;
-   504|            padding: 8px 20px;
-   505|            display: block;
-   506|            transition: color 0.2s, background 0.2s;
-   507|        }
-   508|
-   509|        .dropdown a:hover {
-   510|            color: var(--accent);
-   511|            background: var(--accent-tint);
-   512|        }
-   513|
-   514|        .toggle-btn {
-   515|            top: 72px;
-   516|        }
-   517|
-   518|        .hamburger-btn {
-   519|            top: 72px;
-   520|        }
-   521|
-   522|        @media (max-width: 767px) {
-   523|            .top-nav {
-   524|                padding: 12px 16px;
-   525|                gap: 16px;
-   526|            }
-   527|            .nav-brand {
-   528|                font-size: 1.125rem;
-   529|            }
-   530|            .nav-menu > li > a {
-   531|                font-size: 0.875rem;
-   532|                padding: 6px 10px;
-   533|            }
-   534|            .dropdown {
-   535|                min-width: 180px;
-   536|            }
-   537|        }
-   538|
-   539|    </style>
-   540|</head>
-   541|<body>
-   542|    <nav class="top-nav">
-   543|        <a href="../../index.html" class="nav-brand">ZimaCube Experience Blog</a>
-   544|        <ul class="nav-menu">
-   545|            <li><a href="../../index.html">Home</a></li>
-   546|            <li>
-   547|                <a href="../first-impressions/introduction.html">First Impressions</a>
-   548|                <div class="dropdown">
-   549|                    <a href="../first-impressions/introduction.html">Introduction</a>
-   550|                    <a href="../first-impressions/unboxing.html">Unboxing</a>
-   551|                </div>
-   552|            </li>
-   553|            <li>
-   554|                <a href="../hardware/overview.html">Hardware</a>
-   555|                <div class="dropdown">
-   556|                    <a href="../hardware/overview.html">Overview</a>
-   557|                    <a href="../hardware/disassembly.html">Taking It Apart</a>
-   558|                    <a href="../hardware/would-i-buy-it.html">Would I Buy It?</a>
-   559|                    <a href="../hardware/six-weeks-later.html">Six Weeks Later</a>
-   560|                </div>
-   561|            </li>
-   562|            <li>
-   563|                <a href="../windows-server/bare-metal-setup.html">Windows Server</a>
-   564|                <div class="dropdown">
-   565|                    <a href="../windows-server/bare-metal-setup.html">Bare-Metal Setup</a>
-   566|                </div>
-   567|            </li>
-   568|            <li>
-   569|                <a href="../homelab-journal/proxmox-primary-os.html">Homelab Journal</a>
-   570|                <div class="dropdown">
-   571|                    <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
-   572|                    <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
-   573|                    <a href="../homelab-journal/backups.html">Backups</a>
-   574|                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watching the Fleet: What Does a One-Man Homelab Actually Need? — ZimaCube Experience Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FAFAF8;
+            --bg-secondary: #F5F5F2;
+            --text-primary: #1A1A1A;
+            --text-secondary: #6B6B6B;
+            --text-muted: #9E9E9E;
+            --accent: #6D28D9;
+            --accent-hover: #5B21B6;
+            --accent-tint: rgba(109, 40, 217, 0.06);
+            --border-light: #E5E5E5;
+            --border-accent: #6D28D9;
+            --content-max: 720px;
+            --sidebar-width: 260px;
+            --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: 1.125rem;
+            line-height: 1.65;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-light);
+            padding: 32px 24px;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 48px 24px;
+            max-width: calc(var(--content-max) + 48px);
+        }
+
+        .content-inner {
+            max-width: var(--content-max);
+            margin: 0 auto;
+        }
+
+        /* Mobile drawer */
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            z-index: 199;
+        }
+
+        .drawer-overlay.active {
+            display: block;
+        }
+
+        .mobile-drawer {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-primary);
+            border-left: 1px solid var(--border-light);
+            padding: 24px;
+            z-index: 200;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-drawer.active {
+            transform: translateX(0);
+        }
+
+        /* Toggle buttons */
+        .toggle-btn {
+            position: fixed;
+            top: 16px;
+            z-index: 150;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .sidebar-toggle {
+            left: calc(var(--sidebar-width) + 16px);
+        }
+
+        .sidebar.collapsed + .main-content .sidebar-toggle {
+            left: 16px;
+        }
+
+        .hamburger-btn {
+            display: none;
+            right: 16px;
+            top: 16px;
+        }
+
+        /* TOC */
+        .toc-title {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            letter-spacing: -0.01em;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-list li {
+            margin-bottom: 8px;
+        }
+
+        .toc-list li::before {
+            display: none;
+        }
+
+        .toc-list a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            display: block;
+            padding: 4px 0;
+            border-left: 2px solid transparent;
+            padding-left: 12px;
+            transition: all 0.2s;
+        }
+
+        .toc-list a:hover {
+            color: var(--accent);
+        }
+
+        .toc-list a.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 500;
+        }
+
+        .toc-list a.h3 {
+            padding-left: 24px;
+            font-size: 0.8125rem;
+        }
+
+        /* Typography */
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: 1.75rem;
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+            margin-top: 48px;
+            margin-bottom: 20px;
+            scroll-margin-top: 24px;
+        }
+
+        h3 {
+            font-family: var(--font-body);
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-primary);
+            margin-top: 32px;
+            margin-bottom: 16px;
+            scroll-margin-top: 24px;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-light);
+            margin: 48px 0;
+            text-align: center;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        ul li::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            margin-left: -18px;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+
+        /* Blockquote */
+        blockquote {
+            border-left: 3px solid var(--border-accent);
+            background: var(--accent-tint);
+            padding: 16px 20px;
+            margin: 24px 0;
+            font-style: italic;
+            border-radius: 0 4px 4px 0;
+        }
+
+        blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+            font-size: 0.9375rem;
+            background: #F0F0EE;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--text-primary);
+        }
+
+        pre {
+            background: #1E1E1E;
+            color: #E4E4E4;
+            padding: 16px 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* Footer date */
+        .post-footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .post-footer em {
+            font-style: italic;
+        }
+
+        /* Backlinks */
+        .backlinks {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .backlinks h3 {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .backlinks ul {
+            padding-left: 0;
+        }
+
+        .backlinks ul li::before {
+            display: none;
+        }
+
+        .backlinks ul li {
+            margin-bottom: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1023px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 64px 24px 48px;
+            }
+
+            .sidebar-toggle {
+                display: none;
+            }
+
+            .hamburger-btn {
+                display: block;
+            }
+
+            .mobile-drawer {
+                display: block;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 767px) {
+            body {
+                font-size: 1rem;
+            }
+
+            .main-content {
+                padding: 64px 16px 48px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            h2 {
+                font-size: 1.375rem;
+            }
+
+            h3 {
+                font-size: 1.125rem;
+            }
+        }
+        /* Top Navigation */
+        .top-nav {
+            width: 100%;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 32px;
+        }
+
+        .nav-brand {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+
+        .nav-brand:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 0;
+        }
+
+        .nav-menu li {
+            margin: 0;
+            position: relative;
+        }
+
+        .nav-menu li::before {
+            display: none;
+        }
+
+        .nav-menu > li > a {
+            font-family: var(--font-body);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            display: block;
+            transition: color 0.2s, background 0.2s;
+            border-radius: 4px;
+        }
+
+        .nav-menu > li > a:hover {
+            color: var(--accent);
+            background: var(--accent-tint);
+        }
+
+        /* Dropdown */
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            min-width: 220px;
+            padding: 8px 0;
+            z-index: 300;
+        }
+
+        .nav-menu li:hover .dropdown {
+            display: block;
+        }
+
+        .dropdown a {
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 20px;
+            display: block;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .dropdown a:hover {
+            color: var(--accent);
+            background: var(--accent-tint);
+        }
+
+        .toggle-btn {
+            top: 72px;
+        }
+
+        .hamburger-btn {
+            top: 72px;
+        }
+
+        @media (max-width: 767px) {
+            .top-nav {
+                padding: 12px 16px;
+                gap: 16px;
+            }
+            .nav-brand {
+                font-size: 1.125rem;
+            }
+            .nav-menu > li > a {
+                font-size: 0.875rem;
+                padding: 6px 10px;
+            }
+            .dropdown {
+                min-width: 180px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="../../index.html" class="nav-brand">ZimaCube Experience Blog</a>
+        <ul class="nav-menu">
+            <li><a href="../../index.html">Home</a></li>
+            <li>
+                <a href="../first-impressions/introduction.html">First Impressions</a>
+                <div class="dropdown">
+                    <a href="../first-impressions/introduction.html">Introduction</a>
+                    <a href="../first-impressions/unboxing.html">Unboxing</a>
+                </div>
+            </li>
+            <li>
+                <a href="../hardware/overview.html">Hardware</a>
+                <div class="dropdown">
+                    <a href="../hardware/overview.html">Overview</a>
+                    <a href="../hardware/disassembly.html">Taking It Apart</a>
+                    <a href="../hardware/would-i-buy-it.html">Would I Buy It?</a>
+                    <a href="../hardware/six-weeks-later.html">Six Weeks Later</a>
+                </div>
+            </li>
+            <li>
+                <a href="../windows-server/bare-metal-setup.html">Windows Server</a>
+                <div class="dropdown">
+                    <a href="../windows-server/bare-metal-setup.html">Bare-Metal Setup</a>
+                </div>
+            </li>
+            <li>
+                <a href="../homelab-journal/proxmox-primary-os.html">Homelab Journal</a>
+                <div class="dropdown">
+                    <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
+                    <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
+                    <a href="../homelab-journal/backups.html">Backups</a>
+                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
                     <a href="../homelab-journal/hermes-agent-on-zimacube.html">Hermes Agent</a>
-   575|                </div>
-   576|            </li>
-   577|            <li>
-   578|                <a href="../meta/disclaimer.html">Meta</a>
-   579|                <div class="dropdown">
-   580|                    <a href="../meta/disclaimer.html">Full Disclosure</a>
-   581|                </div>
-   582|            </li>
-   583|        </ul>
-   584|    </nav>
-   585|
-   586|    <!-- Mobile Drawer -->
-   587|    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-   588|    <div class="mobile-drawer" id="mobileDrawer">
-   589|        <div class="toc-title">Contents</div>
-   590|        <ul class="toc-list">
-   591|            <li><a href="#what-i-am-using-right-now">What I Am Using Right Now</a></li>
-   592|            <li><a href="#then-there-is-proxmox-data-center-manager">Proxmox Data Center Manager</a></li>
-   593|            <li><a href="#the-question-i-keep-coming-back-to">The Question I Keep Coming Back To</a></li>
-   594|            <li><a href="#uptime-kuma">Uptime Kuma</a></li>
-   595|            <li><a href="#checkmk-and-prtg">CheckMK and PRTG</a></li>
-   596|            <li><a href="#what-i-actually-want">What I Actually Want</a></li>
-   597|            <li><a href="#the-ai-agent-idea">The AI Agent Idea</a></li>
-   598|            <li><a href="#where-i-am-leaning">Where I Am Leaning</a></li>
-   599|        </ul>
-   600|    </div>
-   601|
-   602|    <!-- Desktop Sidebar -->
-   603|    <aside class="sidebar" id="sidebar">
-   604|        <div class="toc-title">Contents</div>
-   605|        <ul class="toc-list">
-   606|            <li><a href="#what-i-am-using-right-now">What I Am Using Right Now</a></li>
-   607|            <li><a href="#then-there-is-proxmox-data-center-manager">Proxmox Data Center Manager</a></li>
-   608|            <li><a href="#the-question-i-keep-coming-back-to">The Question I Keep Coming Back To</a></li>
-   609|            <li><a href="#uptime-kuma">Uptime Kuma</a></li>
-   610|            <li><a href="#checkmk-and-prtg">CheckMK and PRTG</a></li>
-   611|            <li><a href="#what-i-actually-want">What I Actually Want</a></li>
-   612|            <li><a href="#the-ai-agent-idea">The AI Agent Idea</a></li>
-   613|            <li><a href="#where-i-am-leaning">Where I Am Leaning</a></li>
-   614|        </ul>
-   615|    </aside>
-   616|
-   617|    <!-- Toggle Buttons -->
-   618|    <button class="toggle-btn sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">⊗</button>
-   619|    <button class="toggle-btn hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" title="Open contents">☰</button>
-   620|
-   621|    <!-- Main Content -->
-   622|    <main class="main-content">
-   623|        <div class="content-inner">
-   624|            <h1>Watching the Fleet: What Does a One-Man Homelab Actually Need?</h1>
-   625|
-   626|            <p>I now have two Proxmox hosts sitting on my desk, plus a ZimaBlade waiting in the wings for a purpose I have not found yet. The ZimaCube runs almost everything that matters to me on my home network. DNS. DHCP. Containers. The whole Synology NAS-as-a-VM situation I described in <a href="proxmox-primary-os.html">the Proxmox post</a>. And <a href="backups.html">the backup chain</a> that keeps all of it safe.</p>
-   627|
-   628|            <p>Which means the ZimaCube is also the single point of failure for my entire digital life.</p>
-   629|
-   630|            <p>That is a slightly uncomfortable realisation. It is one thing to tinker with a box, write about it, take it apart for fun. It is another thing to have your network infrastructure depend on it running properly every single day. And that is where monitoring starts to matter — not as a nice-to-have dashboard, but as the thing that tells you something is wrong before you notice it yourself.</p>
-   631|
-   632|            <h2 id="what-i-am-using-right-now">What I Am Using Right Now</h2>
-   633|
-   634|            <p>I run an LXC container called Pulse. It monitors both of my active Proxmox hosts — the ZimaCube and a decade-old Mac Mini — and gives me a graphical dashboard with CPU, memory, network, disk, the lot. It looks genuinely good. Clean graphs, colour-coded health indicators, the kind of interface you want to look at. I wrote about it in <a href="backups.html">the backups post</a>, but it deserves more than a mention here because it is the tool I actually open every morning.</p>
-   635|
-   636|            <p>I know I could check all of this from the command line. I know there are terminal-based tools that would make me feel very technical. But I like opening a browser and seeing a single screen that tells me whether everything is fine or whether something is about to break. Pulse also sends me alerts. If something goes wrong, I get a message. I do not need to be checking dashboards constantly — the dashboard checks me.</p>
-   637|
-   638|            <h2 id="then-there-is-proxmox-data-center-manager">Then There Is Proxmox Data Center Manager</h2>
-   639|
-   640|            <p>This is the new kid on the block. It is not pretty. It does not try to be. The design is industrial, functional, and very clearly aimed at enterprise customers who need to look after dozens of Proxmox hosts across multiple sites. It also includes monitoring for Proxmox Backup Server, which means you can open a web UI for PBS directly from the same interface. That is a lot of features I have not fully explored yet.</p>
-   641|
-   642|            <p>I installed it because I wanted to see what it could do. And it does a lot. It pulls metrics from every host, shows you storage pools, lets you watch backup jobs in real time. It is the kind of tool that makes you feel like you are running a data centre, even if your data centre is two machines on a desk in your living room.</p>
-   643|
-   644|            <p>I am not sure it is going to stay. Pulse gives me everything I actually need to see on a daily basis. Proxmox Data Center Manager gives me everything I might need if my homelab grows to ten hosts and I have hired three people to manage it. I have not hired three people.</p>
-   645|
-   646|            <p>But I want to test it properly before I decide. You do not know what a tool is missing until you have used it for a while.</p>
-   647|
-   648|            <h2 id="the-question-i-keep-coming-back-to">The Question I Keep Coming Back To</h2>
-   649|
-   650|            <p>Here is the honest question: do I actually need any of this?</p>
-   651|
-   652|            <p>I am one person. I am not managing a fleet of servers for a company. I am managing a couple of machines for myself. What I actually care about is very simple: is my DNS running? Is DHCP handing out addresses? Are my containers up? That is it. I do not need historical performance graphs going back six months. I do not need capacity planning dashboards. I need to know if something broke while I was asleep.</p>
-   653|
-   654|            <p>And that is where the monitoring landscape gets interesting, because there are tools that do exactly that — and nothing more.</p>
-   655|
-   656|            <h2 id="uptime-kuma">Uptime Kuma</h2>
-   657|
-   658|            <p>If you have spent any time in the self-hosted community, you have heard of Uptime Kuma. It is probably the most well-known lightweight monitoring tool out there, and for good reason. You point it at a service, it checks whether that service responds, and it tells you if it does not. It is simple. It is pretty. It works.</p>
-   659|
-   660|            <p>I have not deployed it yet, but I have looked at it closely. It would tell me if my DNS server goes down, if my DHCP stops responding, if a specific container crashes. It would not tell me why. It would not help me fix it. But it would tell me <em>that</em> something is wrong, and sometimes that is enough.</p>
-   661|
-   662|            <h2 id="checkmk-and-prtg">CheckMK and PRTG</h2>
-   663|
-   664|            <p>Then there are the heavier options. CheckMK is one — resource-light compared to the enterprise tools, but still capable of deep monitoring if you configure it. PRTG is what we use at work, and it is properly thorough. It requires Windows to set up, which means spinning up a VM on the ZimaCube. Two cores, four gigs of RAM, no problem. The ZimaCube has forty gigs of RAM and I have a couple of NVMe drives I have not even touched yet. Power is not the constraint here.</p>
-   665|
-   666|            <p>But power is not the constraint here. The constraint is time. PRTG is a lot of tool for a one-person operation. CheckMK sits somewhere in the middle. Both of them would give me more data than I can actually use, and more configuration than I want to maintain.</p>
-   667|
-   668|            <h2 id="what-i-actually-want">What I Actually Want</h2>
-   669|
-   670|            <p>I want something between Uptime Kuma and PRTG. Something that checks whether my critical services are up, but also gives me a nudge in the right direction when something goes wrong. Not just "DNS is down" but "DNS is down and here is the last thing that changed."</p>
-   671|
-   672|            <p>And that is where things get interesting.</p>
-   673|
-   674|            <h2 id="the-ai-agent-idea">The AI Agent Idea</h2>
-   675|
-   676|            <p>I have set up an LXC container on the ZimaCube that runs every major AI coding tool you can think of. Claude, Codex, OpenCode, Pi — all of them. I am going to write about that in a separate post, because it is a whole conversation on its own.</p>
-   677|
-   678|            <p>But the idea I am toying with is this: what if I set up a cron job that makes one of these agents SSH into my Proxmox hosts every few hours, check the health of the critical services, and send me a summary? Not a raw metrics dump. An actual summary. "DNS is running. DHCP is fine. Backup job completed at 3am. You should know that storage on the ZimaCube is at 62 per cent — not urgent, but worth keeping an eye on."</p>
-   679|
-   680|            <p>That is not something Uptime Kuma can do. That is not something Pulse can do either. Those tools show you data. An AI agent could read the data, understand the context, and tell you what matters.</p>
-   681|
-   682|            <p>I am not sure this is a good idea yet. It might be over-engineered. It might be the homelab equivalent of using a sledgehammer to crack a nut. But it is the kind of thing that is now <em>possible</em> because the ZimaCube has enough resources to run it, and because I have this container with all the AI tools sitting in it doing nothing most of the time.</p>
-   683|
-   684|            <p>The ZimaCube has six cores, forty gigabytes of RAM, six drive bays, and dual 2.5GbE networking. I mentioned the specs in <a href="../hardware/overview.html">the hardware overview</a> and the reality of them when I <a href="../hardware/disassembly.html">opened the case up</a>. It is a machine that was designed as a NAS but behaves like a proper server. And that means I can run monitoring, AI agents, and everything else alongside my actual services without any of it struggling.</p>
-   685|
-   686|            <p>Whether I <em>should</em> is a different question. But the fact that I <em>can</em> is what makes this whole project interesting.</p>
-   687|
-   688|            <h2 id="where-i-am-leaning">Where I Am Leaning</h2>
-   689|
-   690|            <p>I am probably going to keep Pulse for now because I like it. I am going to keep Proxmox Data Center Manager running for a few more weeks to see if I discover a use case I did not expect. And I am going to build that lightweight AI monitoring agent — not because it is the most practical solution, but because it is the one that fits how I actually work.</p>
-   691|
-   692|            <p>I do not want to stare at dashboards. I want to get a message that says "everything is fine" most days, and a message that says "this needs your attention" when it does not. And if an AI agent can learn over time which things actually need my attention and which ones are just noise, that is better than any threshold-based alerting system I could configure manually.</p>
-   693|
-   694|            <p>It might not work. It might end up being more effort than it is worth. But then again, half the fun of this project has been trying things that should not work on a box this size and finding out that they do.</p>
-   695|
-   696|            <p>I will let you know how it goes.</p>
-   697|
-   698|            <div class="post-footer">
-   699|                <em>May 2026</em>
-   700|            </div>
-   701|
-   702|            <div class="backlinks">
-   703|                <h3>Related Posts</h3>
-   704|                <ul>
-   705|                    <li><a href="proxmox-primary-os.html">Why Proxmox Is the Only OS That Makes Sense</a> — the setup being monitored</li>
-   706|                    <li><a href="backups.html">The Most Exciting Topic in Tech: Backups</a> — where Pulse first appears</li>
-   707|                    <li><a href="../hardware/overview.html">Hardware Overview</a> — the specs this is all running on</li>
-   708|                    <li><a href="../hardware/disassembly.html">Inside the ZimaCube</a> — the physical reality of the machine</li>
-   709|                    <li><a href="../windows-server/bare-metal-setup.html">Bare-Metal Windows Server 2025</a> — the experiment that showed me what this hardware can do</li>
-   710|                </ul>
-   711|            </div>
-   712|        </div>
-   713|    </main>
-   714|
-   715|    <script>
-   716|        // Sidebar toggle (desktop)
-   717|        function toggleSidebar() {
-   718|            const sidebar = document.getElementById('sidebar');
-   719|            sidebar.classList.toggle('collapsed');
-   720|            const btn = document.getElementById('sidebarToggle');
-   721|            btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '⊗';
-   722|        }
-   723|
-   724|        // Mobile drawer
-   725|        function openDrawer() {
-   726|            document.getElementById('mobileDrawer').classList.add('active');
-   727|            document.getElementById('drawerOverlay').classList.add('active');
-   728|            document.body.style.overflow = 'hidden';
-   729|        }
-   730|
-   731|        function closeDrawer() {
-   732|            document.getElementById('mobileDrawer').classList.remove('active');
-   733|            document.getElementById('drawerOverlay').classList.remove('active');
-   734|            document.body.style.overflow = '';
-   735|        }
-   736|
-   737|        // Active TOC highlighting
-   738|        function updateActiveToc() {
-   739|            const headings = document.querySelectorAll('h2[id]');
-   740|            const tocLinks = document.querySelectorAll('.toc-list a');
-   741|            let activeId = '';
-   742|
-   743|            headings.forEach(heading => {
-   744|                const rect = heading.getBoundingClientRect();
-   745|                if (rect.top <= 100) {
-   746|                    activeId = heading.id;
-   747|                }
-   748|            });
-   749|
-   750|            tocLinks.forEach(link => {
-   751|                link.classList.remove('active');
-   752|                if (activeId && link.getAttribute('href') === '#' + activeId) {
-   753|                    link.classList.add('active');
-   754|                }
-   755|            });
-   756|        }
-   757|
-   758|        window.addEventListener('scroll', updateActiveToc);
-   759|        updateActiveToc();
-   760|    </script>
-   761|</body>
-   762|</html>
-   763|
+                </div>
+            </li>
+            <li>
+                <a href="../meta/disclaimer.html">Meta</a>
+                <div class="dropdown">
+                    <a href="../meta/disclaimer.html">Full Disclosure</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Mobile Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="toc-title">Contents</div>
+        <ul class="toc-list">
+            <li><a href="#what-i-am-using-right-now">What I Am Using Right Now</a></li>
+            <li><a href="#then-there-is-proxmox-data-center-manager">Proxmox Data Center Manager</a></li>
+            <li><a href="#the-question-i-keep-coming-back-to">The Question I Keep Coming Back To</a></li>
+            <li><a href="#uptime-kuma">Uptime Kuma</a></li>
+            <li><a href="#checkmk-and-prtg">CheckMK and PRTG</a></li>
+            <li><a href="#what-i-actually-want">What I Actually Want</a></li>
+            <li><a href="#the-ai-agent-idea">The AI Agent Idea</a></li>
+            <li><a href="#where-i-am-leaning">Where I Am Leaning</a></li>
+        </ul>
+    </div>
+
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="toc-title">Contents</div>
+        <ul class="toc-list">
+            <li><a href="#what-i-am-using-right-now">What I Am Using Right Now</a></li>
+            <li><a href="#then-there-is-proxmox-data-center-manager">Proxmox Data Center Manager</a></li>
+            <li><a href="#the-question-i-keep-coming-back-to">The Question I Keep Coming Back To</a></li>
+            <li><a href="#uptime-kuma">Uptime Kuma</a></li>
+            <li><a href="#checkmk-and-prtg">CheckMK and PRTG</a></li>
+            <li><a href="#what-i-actually-want">What I Actually Want</a></li>
+            <li><a href="#the-ai-agent-idea">The AI Agent Idea</a></li>
+            <li><a href="#where-i-am-leaning">Where I Am Leaning</a></li>
+        </ul>
+    </aside>
+
+    <!-- Toggle Buttons -->
+    <button class="toggle-btn sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">⊗</button>
+    <button class="toggle-btn hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" title="Open contents">☰</button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-inner">
+            <h1>Watching the Fleet: What Does a One-Man Homelab Actually Need?</h1>
+
+            <p>I now have two Proxmox hosts sitting on my desk, plus a ZimaBlade waiting in the wings for a purpose I have not found yet. The ZimaCube runs almost everything that matters to me on my home network. DNS. DHCP. Containers. The whole Synology NAS-as-a-VM situation I described in <a href="proxmox-primary-os.html">the Proxmox post</a>. And <a href="backups.html">the backup chain</a> that keeps all of it safe.</p>
+
+            <p>Which means the ZimaCube is also the single point of failure for my entire digital life.</p>
+
+            <p>That is a slightly uncomfortable realisation. It is one thing to tinker with a box, write about it, take it apart for fun. It is another thing to have your network infrastructure depend on it running properly every single day. And that is where monitoring starts to matter — not as a nice-to-have dashboard, but as the thing that tells you something is wrong before you notice it yourself.</p>
+
+            <h2 id="what-i-am-using-right-now">What I Am Using Right Now</h2>
+
+            <p>I run an LXC container called Pulse. It monitors both of my active Proxmox hosts — the ZimaCube and a decade-old Mac Mini — and gives me a graphical dashboard with CPU, memory, network, disk, the lot. It looks genuinely good. Clean graphs, colour-coded health indicators, the kind of interface you want to look at. I wrote about it in <a href="backups.html">the backups post</a>, but it deserves more than a mention here because it is the tool I actually open every morning.</p>
+
+            <p>I know I could check all of this from the command line. I know there are terminal-based tools that would make me feel very technical. But I like opening a browser and seeing a single screen that tells me whether everything is fine or whether something is about to break. Pulse also sends me alerts. If something goes wrong, I get a message. I do not need to be checking dashboards constantly — the dashboard checks me.</p>
+
+            <h2 id="then-there-is-proxmox-data-center-manager">Then There Is Proxmox Data Center Manager</h2>
+
+            <p>This is the new kid on the block. It is not pretty. It does not try to be. The design is industrial, functional, and very clearly aimed at enterprise customers who need to look after dozens of Proxmox hosts across multiple sites. It also includes monitoring for Proxmox Backup Server, which means you can open a web UI for PBS directly from the same interface. That is a lot of features I have not fully explored yet.</p>
+
+            <p>I installed it because I wanted to see what it could do. And it does a lot. It pulls metrics from every host, shows you storage pools, lets you watch backup jobs in real time. It is the kind of tool that makes you feel like you are running a data centre, even if your data centre is two machines on a desk in your living room.</p>
+
+            <p>I am not sure it is going to stay. Pulse gives me everything I actually need to see on a daily basis. Proxmox Data Center Manager gives me everything I might need if my homelab grows to ten hosts and I have hired three people to manage it. I have not hired three people.</p>
+
+            <p>But I want to test it properly before I decide. You do not know what a tool is missing until you have used it for a while.</p>
+
+            <h2 id="the-question-i-keep-coming-back-to">The Question I Keep Coming Back To</h2>
+
+            <p>Here is the honest question: do I actually need any of this?</p>
+
+            <p>I am one person. I am not managing a fleet of servers for a company. I am managing a couple of machines for myself. What I actually care about is very simple: is my DNS running? Is DHCP handing out addresses? Are my containers up? That is it. I do not need historical performance graphs going back six months. I do not need capacity planning dashboards. I need to know if something broke while I was asleep.</p>
+
+            <p>And that is where the monitoring landscape gets interesting, because there are tools that do exactly that — and nothing more.</p>
+
+            <h2 id="uptime-kuma">Uptime Kuma</h2>
+
+            <p>If you have spent any time in the self-hosted community, you have heard of Uptime Kuma. It is probably the most well-known lightweight monitoring tool out there, and for good reason. You point it at a service, it checks whether that service responds, and it tells you if it does not. It is simple. It is pretty. It works.</p>
+
+            <p>I have not deployed it yet, but I have looked at it closely. It would tell me if my DNS server goes down, if my DHCP stops responding, if a specific container crashes. It would not tell me why. It would not help me fix it. But it would tell me <em>that</em> something is wrong, and sometimes that is enough.</p>
+
+            <h2 id="checkmk-and-prtg">CheckMK and PRTG</h2>
+
+            <p>Then there are the heavier options. CheckMK is one — resource-light compared to the enterprise tools, but still capable of deep monitoring if you configure it. PRTG is what we use at work, and it is properly thorough. It requires Windows to set up, which means spinning up a VM on the ZimaCube. Two cores, four gigs of RAM, no problem. The ZimaCube has forty gigs of RAM and I have a couple of NVMe drives I have not even touched yet. Power is not the constraint here.</p>
+
+            <p>But power is not the constraint here. The constraint is time. PRTG is a lot of tool for a one-person operation. CheckMK sits somewhere in the middle. Both of them would give me more data than I can actually use, and more configuration than I want to maintain.</p>
+
+            <h2 id="what-i-actually-want">What I Actually Want</h2>
+
+            <p>I want something between Uptime Kuma and PRTG. Something that checks whether my critical services are up, but also gives me a nudge in the right direction when something goes wrong. Not just "DNS is down" but "DNS is down and here is the last thing that changed."</p>
+
+            <p>And that is where things get interesting.</p>
+
+            <h2 id="the-ai-agent-idea">The AI Agent Idea</h2>
+
+            <p>I have set up an LXC container on the ZimaCube that runs every major AI coding tool you can think of. Claude, Codex, OpenCode, Pi — all of them. I am going to write about that in a separate post, because it is a whole conversation on its own.</p>
+
+            <p>But the idea I am toying with is this: what if I set up a cron job that makes one of these agents SSH into my Proxmox hosts every few hours, check the health of the critical services, and send me a summary? Not a raw metrics dump. An actual summary. "DNS is running. DHCP is fine. Backup job completed at 3am. You should know that storage on the ZimaCube is at 62 per cent — not urgent, but worth keeping an eye on."</p>
+
+            <p>That is not something Uptime Kuma can do. That is not something Pulse can do either. Those tools show you data. An AI agent could read the data, understand the context, and tell you what matters.</p>
+
+            <p>I am not sure this is a good idea yet. It might be over-engineered. It might be the homelab equivalent of using a sledgehammer to crack a nut. But it is the kind of thing that is now <em>possible</em> because the ZimaCube has enough resources to run it, and because I have this container with all the AI tools sitting in it doing nothing most of the time.</p>
+
+            <p>The ZimaCube has six cores, forty gigabytes of RAM, six drive bays, and dual 2.5GbE networking. I mentioned the specs in <a href="../hardware/overview.html">the hardware overview</a> and the reality of them when I <a href="../hardware/disassembly.html">opened the case up</a>. It is a machine that was designed as a NAS but behaves like a proper server. And that means I can run monitoring, AI agents, and everything else alongside my actual services without any of it struggling.</p>
+
+            <p>Whether I <em>should</em> is a different question. But the fact that I <em>can</em> is what makes this whole project interesting.</p>
+
+            <h2 id="where-i-am-leaning">Where I Am Leaning</h2>
+
+            <p>I am probably going to keep Pulse for now because I like it. I am going to keep Proxmox Data Center Manager running for a few more weeks to see if I discover a use case I did not expect. And I am going to build that lightweight AI monitoring agent — not because it is the most practical solution, but because it is the one that fits how I actually work.</p>
+
+            <p>I do not want to stare at dashboards. I want to get a message that says "everything is fine" most days, and a message that says "this needs your attention" when it does not. And if an AI agent can learn over time which things actually need my attention and which ones are just noise, that is better than any threshold-based alerting system I could configure manually.</p>
+
+            <p>It might not work. It might end up being more effort than it is worth. But then again, half the fun of this project has been trying things that should not work on a box this size and finding out that they do.</p>
+
+            <p>I will let you know how it goes.</p>
+
+            <div class="post-footer">
+                <em>May 2026</em>
+            </div>
+
+            <div class="backlinks">
+                <h3>Related Posts</h3>
+                <ul>
+                    <li><a href="proxmox-primary-os.html">Why Proxmox Is the Only OS That Makes Sense</a> — the setup being monitored</li>
+                    <li><a href="backups.html">The Most Exciting Topic in Tech: Backups</a> — where Pulse first appears</li>
+                    <li><a href="../hardware/overview.html">Hardware Overview</a> — the specs this is all running on</li>
+                    <li><a href="../hardware/disassembly.html">Inside the ZimaCube</a> — the physical reality of the machine</li>
+                    <li><a href="../windows-server/bare-metal-setup.html">Bare-Metal Windows Server 2025</a> — the experiment that showed me what this hardware can do</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Sidebar toggle (desktop)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+            const btn = document.getElementById('sidebarToggle');
+            btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '⊗';
+        }
+
+        // Mobile drawer
+        function openDrawer() {
+            document.getElementById('mobileDrawer').classList.add('active');
+            document.getElementById('drawerOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDrawer() {
+            document.getElementById('mobileDrawer').classList.remove('active');
+            document.getElementById('drawerOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Active TOC highlighting
+        function updateActiveToc() {
+            const headings = document.querySelectorAll('h2[id]');
+            const tocLinks = document.querySelectorAll('.toc-list a');
+            let activeId = '';
+
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    activeId = heading.id;
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (activeId && link.getAttribute('href') === '#' + activeId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveToc);
+        updateActiveToc();
+    </script>
+</body>
+</html>
