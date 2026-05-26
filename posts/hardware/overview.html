@@ -1,801 +1,803 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hardware Overview — ZimaCube Experience Blog</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #FAFAF8;
-            --bg-secondary: #F5F5F2;
-            --text-primary: #1A1A1A;
-            --text-secondary: #6B6B6B;
-            --text-muted: #9E9E9E;
-            --accent: #6D28D9;
-            --accent-hover: #5B21B6;
-            --accent-tint: rgba(109, 40, 217, 0.06);
-            --border-light: #E5E5E5;
-            --border-accent: #6D28D9;
-            --content-max: 720px;
-            --sidebar-width: 260px;
-            --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: var(--font-body);
-            font-size: 1.125rem;
-            line-height: 1.65;
-            color: var(--text-primary);
-            background: var(--bg-primary);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Layout */
-        .page-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-light);
-            padding: 32px 24px;
-            overflow-y: auto;
-            z-index: 100;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 48px 24px;
-            max-width: calc(var(--content-max) + 48px);
-        }
-
-        .content-inner {
-            max-width: var(--content-max);
-            margin: 0 auto;
-        }
-
-        /* Mobile drawer */
-        .drawer-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.3);
-            z-index: 199;
-        }
-
-        .drawer-overlay.active {
-            display: block;
-        }
-
-        .mobile-drawer {
-            display: none;
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 280px;
-            height: 100vh;
-            background: var(--bg-primary);
-            border-left: 1px solid var(--border-light);
-            padding: 24px;
-            z-index: 200;
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .mobile-drawer.active {
-            transform: translateX(0);
-        }
-
-        /* Toggle buttons */
-        .toggle-btn {
-            position: fixed;
-            top: 16px;
-            z-index: 150;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-light);
-            border-radius: 4px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-family: var(--font-body);
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-
-        .toggle-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .sidebar-toggle {
-            left: calc(var(--sidebar-width) + 16px);
-        }
-
-        .sidebar.collapsed + .main-content .sidebar-toggle {
-            left: 16px;
-        }
-
-        .hamburger-btn {
-            display: none;
-            right: 16px;
-            top: 16px;
-        }
-
-        /* TOC */
-        .toc-title {
-            font-family: var(--font-heading);
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-            letter-spacing: -0.01em;
-        }
-
-        .toc-list {
-            list-style: none;
-        }
-
-        .toc-list li {
-            margin-bottom: 8px;
-        }
-
-        .toc-list li::before {
-            display: none;
-        }
-
-        .toc-list a {
-            text-decoration: none;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            display: block;
-            padding: 4px 0;
-            border-left: 2px solid transparent;
-            padding-left: 12px;
-            transition: all 0.2s;
-        }
-
-        .toc-list a:hover {
-            color: var(--accent);
-        }
-
-        .toc-list a.active {
-            color: var(--accent);
-            border-left-color: var(--accent);
-            font-weight: 500;
-        }
-
-        .toc-list a.h3 {
-            padding-left: 24px;
-            font-size: 0.8125rem;
-        }
-
-        /* Typography */
-        h1 {
-            font-family: var(--font-heading);
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-            color: var(--text-primary);
-            margin-bottom: 32px;
-        }
-
-        h2 {
-            font-family: var(--font-heading);
-            font-size: 1.75rem;
-            font-weight: 600;
-            line-height: 1.3;
-            letter-spacing: -0.01em;
-            color: var(--text-primary);
-            margin-top: 48px;
-            margin-bottom: 20px;
-            scroll-margin-top: 24px;
-        }
-
-        h3 {
-            font-family: var(--font-body);
-            font-size: 1.25rem;
-            font-weight: 600;
-            line-height: 1.4;
-            color: var(--text-primary);
-            margin-top: 32px;
-            margin-bottom: 16px;
-            scroll-margin-top: 24px;
-        }
-
-        p {
-            margin-bottom: 20px;
-        }
-
-        a {
-            color: var(--accent);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        a:hover {
-            color: var(--accent-hover);
-            text-decoration: underline;
-        }
-
-        hr {
-            border: none;
-            border-top: 1px solid var(--border-light);
-            margin: 48px 0;
-            text-align: center;
-        }
-
-        /* Lists */
-        ul, ol {
-            margin-bottom: 20px;
-            padding-left: 24px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
-
-        ul {
-            list-style: none;
-        }
-
-        ul li::before {
-            content: "";
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            margin-left: -18px;
-            margin-right: 12px;
-            vertical-align: middle;
-        }
-
-        /* Blockquote */
-        blockquote {
-            border-left: 3px solid var(--border-accent);
-            background: var(--accent-tint);
-            padding: 16px 20px;
-            margin: 24px 0;
-            font-style: italic;
-            border-radius: 0 4px 4px 0;
-        }
-
-        blockquote p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Code */
-        code {
-            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
-            font-size: 0.9375rem;
-            background: #F0F0EE;
-            padding: 2px 6px;
-            border-radius: 3px;
-            color: var(--text-primary);
-        }
-
-        pre {
-            background: #1E1E1E;
-            color: #E4E4E4;
-            padding: 16px 20px;
-            border-radius: 4px;
-            overflow-x: auto;
-            margin-bottom: 20px;
-            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
-            font-size: 0.9375rem;
-            line-height: 1.6;
-        }
-
-        pre code {
-            background: transparent;
-            padding: 0;
-            color: inherit;
-        }
-
-        /* Images */
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-            border: 1px solid var(--border-light);
-            display: block;
-            margin: 24px 0;
-        }
-
-        figcaption, .image-caption {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: -16px;
-            margin-bottom: 24px;
-            font-style: italic;
-        }
-
-        /* Footer date */
-        .post-footer {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            margin-top: 48px;
-            padding-top: 24px;
-            border-top: 1px solid var(--border-light);
-        }
-
-        .post-footer em {
-            font-style: italic;
-        }
-
-        /* Backlinks */
-        .backlinks {
-            margin-top: 48px;
-            padding-top: 32px;
-            border-top: 1px solid var(--border-light);
-        }
-
-        .backlinks h3 {
-            font-size: 1.125rem;
-            margin-top: 0;
-            margin-bottom: 16px;
-        }
-
-        .backlinks ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .backlinks ul li::before {
-            display: none;
-        }
-
-        .backlinks li {
-            margin-bottom: 8px;
-        }
-
-        .backlinks a {
-            font-size: 0.9375rem;
-        }
-
-        .backlinks-empty {
-            color: var(--text-muted);
-            font-size: 0.9375rem;
-            font-style: italic;
-        }
-
-        /* Responsive */
-        @media (max-width: 1023px) {
-            .sidebar {
-                display: none;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 64px 24px 48px;
-            }
-
-            .sidebar-toggle {
-                display: none;
-            }
-
-            .hamburger-btn {
-                display: block;
-            }
-
-            .mobile-drawer {
-                display: block;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            h2 {
-                font-size: 1.5rem;
-            }
-        }
-
-        @media (max-width: 767px) {
-            body {
-                font-size: 1rem;
-            }
-
-            .main-content {
-                padding: 64px 16px 48px;
-            }
-
-            h1 {
-                font-size: 1.75rem;
-            }
-
-            h2 {
-                font-size: 1.375rem;
-            }
-
-            h3 {
-                font-size: 1.125rem;
-            }
-        }
-        /* Top Navigation */
-        .top-nav {
-            width: 100%;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-light);
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            flex-wrap: wrap;
-            gap: 32px;
-        }
-
-        .nav-brand {
-            font-family: var(--font-heading);
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            text-decoration: none;
-            letter-spacing: -0.01em;
-            white-space: nowrap;
-        }
-
-        .nav-brand:hover {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            gap: 0;
-        }
-
-        .nav-menu li {
-            margin: 0;
-            position: relative;
-        }
-
-        .nav-menu li::before {
-            display: none;
-        }
-
-        .nav-menu > li > a {
-            font-family: var(--font-body);
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 8px 16px;
-            display: block;
-            transition: color 0.2s, background 0.2s;
-            border-radius: 4px;
-        }
-
-        .nav-menu > li > a:hover {
-            color: var(--accent);
-            background: var(--accent-tint);
-        }
-
-        /* Dropdown */
-        .dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-light);
-            border-radius: 4px;
-            min-width: 220px;
-            padding: 8px 0;
-            z-index: 300;
-        }
-
-        .nav-menu li:hover .dropdown {
-            display: block;
-        }
-
-        .dropdown a {
-            font-family: var(--font-body);
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 8px 20px;
-            display: block;
-            transition: color 0.2s, background 0.2s;
-        }
-
-        .dropdown a:hover {
-            color: var(--accent);
-            background: var(--accent-tint);
-        }
-
-        .toggle-btn {
-            top: 72px;
-        }
-
-        .hamburger-btn {
-            top: 72px;
-        }
-
-        @media (max-width: 767px) {
-            .top-nav {
-                padding: 12px 16px;
-                gap: 16px;
-            }
-            .nav-brand {
-                font-size: 1.125rem;
-            }
-            .nav-menu > li > a {
-                font-size: 0.875rem;
-                padding: 6px 10px;
-            }
-            .dropdown {
-                min-width: 180px;
-            }
-        }
-
-    </style>
-</head>
-<body>
-    <nav class="top-nav">
-        <a href="../../index.html" class="nav-brand">ZimaCube Experience Blog</a>
-        <ul class="nav-menu">
-            <li><a href="../../index.html">Home</a></li>
-            <li>
-                <a href="../first-impressions/introduction.html">First Impressions</a>
-                <div class="dropdown">
-                    <a href="../first-impressions/introduction.html">Introduction</a>
-                    <a href="../first-impressions/unboxing.html">Unboxing</a>
-                </div>
-            </li>
-            <li>
-                <a href="../hardware/overview.html">Hardware</a>
-                <div class="dropdown">
-                    <a href="../hardware/overview.html">Overview</a>
-                    <a href="../hardware/disassembly.html">Taking It Apart</a>
-                    <a href="../hardware/would-i-buy-it.html">Would I Buy It?</a>
-                    <a href="../hardware/six-weeks-later.html">Six Weeks Later</a>
-                </div>
-            </li>
-            <li>
-                <a href="../windows-server/bare-metal-setup.html">Windows Server</a>
-                <div class="dropdown">
-                    <a href="../windows-server/bare-metal-setup.html">Bare-Metal Setup</a>
-                </div>
-            </li>
-            <li>
-                <a href="../homelab-journal/proxmox-primary-os.html">Homelab Journal</a>
-                <div class="dropdown">
-                    <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
-                    <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
-                    <a href="../homelab-journal/backups.html">Backups</a>
-                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
-                </div>
-            </li>
-            <li>
-                <a href="../meta/disclaimer.html">Meta</a>
-                <div class="dropdown">
-                    <a href="../meta/disclaimer.html">Full Disclosure</a>
-                </div>
-            </li>
-        </ul>
-    </nav>
-
-    <!-- Mobile Drawer -->
-    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-    <div class="mobile-drawer" id="mobileDrawer">
-        <div class="toc-title">Contents</div>
-        <ul class="toc-list" id="mobileToc">
-            <li><a href="#cpu">CPU</a></li>
-            <li><a href="#ram">RAM</a></li>
-            <li><a href="#storage">Storage</a></li>
-            <li><a href="#networking">Networking</a></li>
-            <li><a href="#pcie-expansion">PCIe Expansion</a></li>
-            <li><a href="#ports">Ports</a></li>
-            <li><a href="#build-and-thermals">Build and Thermals</a></li>
-            <li><a href="#the-quirks">The Quirks</a></li>
-        </ul>
-    </div>
-
-    <!-- Desktop Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="toc-title">Contents</div>
-        <ul class="toc-list" id="desktopToc">
-            <li><a href="#cpu">CPU</a></li>
-            <li><a href="#ram">RAM</a></li>
-            <li><a href="#storage">Storage</a></li>
-            <li><a href="#networking">Networking</a></li>
-            <li><a href="#pcie-expansion">PCIe Expansion</a></li>
-            <li><a href="#ports">Ports</a></li>
-            <li><a href="#build-and-thermals">Build and Thermals</a></li>
-            <li><a href="#the-quirks">The Quirks</a></li>
-        </ul>
-    </aside>
-
-    <!-- Toggle Buttons -->
-    <button class="toggle-btn sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">⊗</button>
-    <button class="toggle-btn hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" title="Open contents">☰</button>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="content-inner">
-            <h1>Hardware Overview</h1>
-
-            <p>I have the Standard model. Silver casing, not the black Pro. Here's what's inside.</p>
-
-            <h2 id="cpu">CPU</h2>
-
-            <ul>
-                <li>Intel i3-1215U</li>
-                <li>6 cores total: 6 efficiency cores + 1 performance core</li>
-                <li>Performance core is hyperthreaded, giving 8 logical cores</li>
-                <li>Boosts up to 4.4GHz</li>
-                <li>Not a desktop chip, but plenty for NAS duty plus VMs</li>
-            </ul>
-
-            <h2 id="ram">RAM</h2>
-
-            <ul>
-                <li>Up to 64GB DDR5 officially supported</li>
-                <li>Two SO-DIMM slots, easy to access</li>
-                <li>Mine came with a single 8GB stick</li>
-                <li>I added a 32GB stick for 40GB total</li>
-            </ul>
-
-            <h2 id="storage">Storage</h2>
-
-            <ul>
-                <li>Six 3.5" drive bays with caddies</li>
-                <li>Four M.2 NVMe slots in the dedicated "seventh bay" area</li>
-                <li>Those four NVMe slots are capped at ~800MB/s read/write due to CPU PCIe lane limits</li>
-                <li>Two additional NVMe slots on the motherboard itself</li>
-                <li>One motherboard slot came with a 256GB boot drive for ZimaOS</li>
-                <li>Second motherboard slot is free for cache, another OS, or expansion</li>
-            </ul>
-
-            <h2 id="networking">Networking</h2>
-
-            <ul>
-                <li>Dual 2.5GbE ports on the Standard</li>
-                <li>Pro model adds an AQC113 Aquantia 10Gb NIC (three Ethernet ports total)</li>
-                <li>For my use case, dual 2.5GbE is plenty</li>
-            </ul>
-
-            <h2 id="pcie-expansion">PCIe Expansion</h2>
-
-            <ul>
-                <li>Slot 1: PCIe Gen 4 x4 electrically, physical x16 slot</li>
-                <li>Slot 2: PCIe Gen 3 x2 electrically, physical x8 slot</li>
-                <li>Low-profile GPUs, quad NICs, HBAs all work fine</li>
-                <li>No external power available — cards must run off slot power alone</li>
-            </ul>
-
-            <h2 id="ports">Ports</h2>
-
-            <p><strong>Back:</strong></p>
-            <ul>
-                <li>Two Thunderbolt 4 ports (support PC direct connection)</li>
-                <li>Two USB 3.0 Type-A ports</li>
-                <li>Dual 2.5GbE</li>
-            </ul>
-
-            <p><strong>Front:</strong></p>
-            <ul>
-                <li>Two USB 3.0 Type-A ports</li>
-                <li>One USB-C 3.0 port</li>
-            </ul>
-
-            <h2 id="build-and-thermals">Build and Thermals</h2>
-
-            <ul>
-                <li>Silver aluminum casing on Standard, black on Pro</li>
-                <li>Caddies are solid once assembled</li>
-                <li>Fan noise at idle: present but not offensive</li>
-                <li>Under sustained load: fans ramp up, noticeable but not screaming</li>
-                <li>Heat management is reasonable for the form factor</li>
-            </ul>
-
-            <h2 id="the-quirks">The Quirks</h2>
-
-            <ul>
-                <li>External power brick still bothers me — there's empty space at the top of the case</li>
-                <li>800MB/s cap on the four NVMe slots in the drive bay area is worth knowing before you buy</li>
-                <li>Motherboard NVMe slots are unrestricted, so boot from there or use for cache</li>
-            </ul>
-
-            <div class="post-footer">
-                <em>Written: May 2026</em>
-            </div>
-
-            <div class="backlinks">
-                <h3>Related Posts</h3>
-                <p class="backlinks-empty">No direct links from this post.</p>
-
-                <h3 style="margin-top: 24px;">Referenced By</h3>
-                <ul>
-                    <li><a href="../../index.html">ZimaCube Experience Blog</a> — homepage</li>
-                    <li><a href="disassembly.html">Taking the ZimaCube Apart</a> — "I mentioned the fan noise in the hardware post — under Windows it's actually..."</li>
-                </ul>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        // Sidebar toggle (desktop)
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-            const btn = document.getElementById('sidebarToggle');
-            btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '⊗';
-        }
-
-        // Mobile drawer
-        function openDrawer() {
-            document.getElementById('mobileDrawer').classList.add('active');
-            document.getElementById('drawerOverlay').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDrawer() {
-            document.getElementById('mobileDrawer').classList.remove('active');
-            document.getElementById('drawerOverlay').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // Active TOC highlighting
-        function updateActiveToc() {
-            const headings = document.querySelectorAll('h2[id]');
-            const tocLinks = document.querySelectorAll('.toc-list a');
-            let activeId = '';
-
-            headings.forEach(heading => {
-                const rect = heading.getBoundingClientRect();
-                if (rect.top <= 100) {
-                    activeId = heading.id;
-                }
-            });
-
-            tocLinks.forEach(link => {
-                link.classList.remove('active');
-                if (activeId && link.getAttribute('href') === '#' + activeId) {
-                    link.classList.add('active');
-                }
-            });
-        }
-
-        window.addEventListener('scroll', updateActiveToc);
-        updateActiveToc();
-    </script>
-</body>
-</html>
+     1|<!DOCTYPE html>
+     2|<html lang="en">
+     3|<head>
+     4|    <meta charset="UTF-8">
+     5|    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6|    <title>Hardware Overview — ZimaCube Experience Blog</title>
+     7|    <link rel="preconnect" href="https://fonts.googleapis.com">
+     8|    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     9|    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    10|    <style>
+    11|        :root {
+    12|            --bg-primary: #FAFAF8;
+    13|            --bg-secondary: #F5F5F2;
+    14|            --text-primary: #1A1A1A;
+    15|            --text-secondary: #6B6B6B;
+    16|            --text-muted: #9E9E9E;
+    17|            --accent: #6D28D9;
+    18|            --accent-hover: #5B21B6;
+    19|            --accent-tint: rgba(109, 40, 217, 0.06);
+    20|            --border-light: #E5E5E5;
+    21|            --border-accent: #6D28D9;
+    22|            --content-max: 720px;
+    23|            --sidebar-width: 260px;
+    24|            --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    25|            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    26|        }
+    27|
+    28|        *, *::before, *::after {
+    29|            box-sizing: border-box;
+    30|            margin: 0;
+    31|            padding: 0;
+    32|        }
+    33|
+    34|        html {
+    35|            scroll-behavior: smooth;
+    36|        }
+    37|
+    38|        body {
+    39|            font-family: var(--font-body);
+    40|            font-size: 1.125rem;
+    41|            line-height: 1.65;
+    42|            color: var(--text-primary);
+    43|            background: var(--bg-primary);
+    44|            -webkit-font-smoothing: antialiased;
+    45|            -moz-osx-font-smoothing: grayscale;
+    46|        }
+    47|
+    48|        /* Layout */
+    49|        .page-wrapper {
+    50|            display: flex;
+    51|            min-height: 100vh;
+    52|        }
+    53|
+    54|        .sidebar {
+    55|            width: var(--sidebar-width);
+    56|            position: fixed;
+    57|            top: 0;
+    58|            left: 0;
+    59|            height: 100vh;
+    60|            background: var(--bg-secondary);
+    61|            border-right: 1px solid var(--border-light);
+    62|            padding: 32px 24px;
+    63|            overflow-y: auto;
+    64|            z-index: 100;
+    65|            transition: transform 0.3s ease;
+    66|        }
+    67|
+    68|        .sidebar.collapsed {
+    69|            transform: translateX(-100%);
+    70|        }
+    71|
+    72|        .main-content {
+    73|            flex: 1;
+    74|            margin-left: var(--sidebar-width);
+    75|            padding: 48px 24px;
+    76|            max-width: calc(var(--content-max) + 48px);
+    77|        }
+    78|
+    79|        .content-inner {
+    80|            max-width: var(--content-max);
+    81|            margin: 0 auto;
+    82|        }
+    83|
+    84|        /* Mobile drawer */
+    85|        .drawer-overlay {
+    86|            display: none;
+    87|            position: fixed;
+    88|            top: 0;
+    89|            left: 0;
+    90|            width: 100%;
+    91|            height: 100%;
+    92|            background: rgba(0,0,0,0.3);
+    93|            z-index: 199;
+    94|        }
+    95|
+    96|        .drawer-overlay.active {
+    97|            display: block;
+    98|        }
+    99|
+   100|        .mobile-drawer {
+   101|            display: none;
+   102|            position: fixed;
+   103|            top: 0;
+   104|            right: 0;
+   105|            width: 280px;
+   106|            height: 100vh;
+   107|            background: var(--bg-primary);
+   108|            border-left: 1px solid var(--border-light);
+   109|            padding: 24px;
+   110|            z-index: 200;
+   111|            overflow-y: auto;
+   112|            transform: translateX(100%);
+   113|            transition: transform 0.3s ease;
+   114|        }
+   115|
+   116|        .mobile-drawer.active {
+   117|            transform: translateX(0);
+   118|        }
+   119|
+   120|        /* Toggle buttons */
+   121|        .toggle-btn {
+   122|            position: fixed;
+   123|            top: 16px;
+   124|            z-index: 150;
+   125|            background: var(--bg-primary);
+   126|            border: 1px solid var(--border-light);
+   127|            border-radius: 4px;
+   128|            padding: 8px 12px;
+   129|            cursor: pointer;
+   130|            font-family: var(--font-body);
+   131|            font-size: 0.875rem;
+   132|            color: var(--text-secondary);
+   133|            transition: all 0.2s;
+   134|        }
+   135|
+   136|        .toggle-btn:hover {
+   137|            border-color: var(--accent);
+   138|            color: var(--accent);
+   139|        }
+   140|
+   141|        .sidebar-toggle {
+   142|            left: calc(var(--sidebar-width) + 16px);
+   143|        }
+   144|
+   145|        .sidebar.collapsed + .main-content .sidebar-toggle {
+   146|            left: 16px;
+   147|        }
+   148|
+   149|        .hamburger-btn {
+   150|            display: none;
+   151|            right: 16px;
+   152|            top: 16px;
+   153|        }
+   154|
+   155|        /* TOC */
+   156|        .toc-title {
+   157|            font-family: var(--font-heading);
+   158|            font-size: 1rem;
+   159|            font-weight: 600;
+   160|            color: var(--text-primary);
+   161|            margin-bottom: 16px;
+   162|            letter-spacing: -0.01em;
+   163|        }
+   164|
+   165|        .toc-list {
+   166|            list-style: none;
+   167|        }
+   168|
+   169|        .toc-list li {
+   170|            margin-bottom: 8px;
+   171|        }
+   172|
+   173|        .toc-list li::before {
+   174|            display: none;
+   175|        }
+   176|
+   177|        .toc-list a {
+   178|            text-decoration: none;
+   179|            color: var(--text-secondary);
+   180|            font-size: 0.875rem;
+   181|            display: block;
+   182|            padding: 4px 0;
+   183|            border-left: 2px solid transparent;
+   184|            padding-left: 12px;
+   185|            transition: all 0.2s;
+   186|        }
+   187|
+   188|        .toc-list a:hover {
+   189|            color: var(--accent);
+   190|        }
+   191|
+   192|        .toc-list a.active {
+   193|            color: var(--accent);
+   194|            border-left-color: var(--accent);
+   195|            font-weight: 500;
+   196|        }
+   197|
+   198|        .toc-list a.h3 {
+   199|            padding-left: 24px;
+   200|            font-size: 0.8125rem;
+   201|        }
+   202|
+   203|        /* Typography */
+   204|        h1 {
+   205|            font-family: var(--font-heading);
+   206|            font-size: 2.5rem;
+   207|            font-weight: 700;
+   208|            line-height: 1.2;
+   209|            letter-spacing: -0.02em;
+   210|            color: var(--text-primary);
+   211|            margin-bottom: 32px;
+   212|        }
+   213|
+   214|        h2 {
+   215|            font-family: var(--font-heading);
+   216|            font-size: 1.75rem;
+   217|            font-weight: 600;
+   218|            line-height: 1.3;
+   219|            letter-spacing: -0.01em;
+   220|            color: var(--text-primary);
+   221|            margin-top: 48px;
+   222|            margin-bottom: 20px;
+   223|            scroll-margin-top: 24px;
+   224|        }
+   225|
+   226|        h3 {
+   227|            font-family: var(--font-body);
+   228|            font-size: 1.25rem;
+   229|            font-weight: 600;
+   230|            line-height: 1.4;
+   231|            color: var(--text-primary);
+   232|            margin-top: 32px;
+   233|            margin-bottom: 16px;
+   234|            scroll-margin-top: 24px;
+   235|        }
+   236|
+   237|        p {
+   238|            margin-bottom: 20px;
+   239|        }
+   240|
+   241|        a {
+   242|            color: var(--accent);
+   243|            text-decoration: none;
+   244|            transition: color 0.2s;
+   245|        }
+   246|
+   247|        a:hover {
+   248|            color: var(--accent-hover);
+   249|            text-decoration: underline;
+   250|        }
+   251|
+   252|        hr {
+   253|            border: none;
+   254|            border-top: 1px solid var(--border-light);
+   255|            margin: 48px 0;
+   256|            text-align: center;
+   257|        }
+   258|
+   259|        /* Lists */
+   260|        ul, ol {
+   261|            margin-bottom: 20px;
+   262|            padding-left: 24px;
+   263|        }
+   264|
+   265|        li {
+   266|            margin-bottom: 8px;
+   267|        }
+   268|
+   269|        ul {
+   270|            list-style: none;
+   271|        }
+   272|
+   273|        ul li::before {
+   274|            content: "";
+   275|            display: inline-block;
+   276|            width: 6px;
+   277|            height: 6px;
+   278|            background: var(--accent);
+   279|            margin-left: -18px;
+   280|            margin-right: 12px;
+   281|            vertical-align: middle;
+   282|        }
+   283|
+   284|        /* Blockquote */
+   285|        blockquote {
+   286|            border-left: 3px solid var(--border-accent);
+   287|            background: var(--accent-tint);
+   288|            padding: 16px 20px;
+   289|            margin: 24px 0;
+   290|            font-style: italic;
+   291|            border-radius: 0 4px 4px 0;
+   292|        }
+   293|
+   294|        blockquote p:last-child {
+   295|            margin-bottom: 0;
+   296|        }
+   297|
+   298|        /* Code */
+   299|        code {
+   300|            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+   301|            font-size: 0.9375rem;
+   302|            background: #F0F0EE;
+   303|            padding: 2px 6px;
+   304|            border-radius: 3px;
+   305|            color: var(--text-primary);
+   306|        }
+   307|
+   308|        pre {
+   309|            background: #1E1E1E;
+   310|            color: #E4E4E4;
+   311|            padding: 16px 20px;
+   312|            border-radius: 4px;
+   313|            overflow-x: auto;
+   314|            margin-bottom: 20px;
+   315|            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+   316|            font-size: 0.9375rem;
+   317|            line-height: 1.6;
+   318|        }
+   319|
+   320|        pre code {
+   321|            background: transparent;
+   322|            padding: 0;
+   323|            color: inherit;
+   324|        }
+   325|
+   326|        /* Images */
+   327|        img {
+   328|            max-width: 100%;
+   329|            height: auto;
+   330|            border-radius: 4px;
+   331|            border: 1px solid var(--border-light);
+   332|            display: block;
+   333|            margin: 24px 0;
+   334|        }
+   335|
+   336|        figcaption, .image-caption {
+   337|            text-align: center;
+   338|            color: var(--text-secondary);
+   339|            font-size: 0.875rem;
+   340|            margin-top: -16px;
+   341|            margin-bottom: 24px;
+   342|            font-style: italic;
+   343|        }
+   344|
+   345|        /* Footer date */
+   346|        .post-footer {
+   347|            text-align: center;
+   348|            color: var(--text-muted);
+   349|            font-size: 0.875rem;
+   350|            margin-top: 48px;
+   351|            padding-top: 24px;
+   352|            border-top: 1px solid var(--border-light);
+   353|        }
+   354|
+   355|        .post-footer em {
+   356|            font-style: italic;
+   357|        }
+   358|
+   359|        /* Backlinks */
+   360|        .backlinks {
+   361|            margin-top: 48px;
+   362|            padding-top: 32px;
+   363|            border-top: 1px solid var(--border-light);
+   364|        }
+   365|
+   366|        .backlinks h3 {
+   367|            font-size: 1.125rem;
+   368|            margin-top: 0;
+   369|            margin-bottom: 16px;
+   370|        }
+   371|
+   372|        .backlinks ul {
+   373|            list-style: none;
+   374|            padding-left: 0;
+   375|        }
+   376|
+   377|        .backlinks ul li::before {
+   378|            display: none;
+   379|        }
+   380|
+   381|        .backlinks li {
+   382|            margin-bottom: 8px;
+   383|        }
+   384|
+   385|        .backlinks a {
+   386|            font-size: 0.9375rem;
+   387|        }
+   388|
+   389|        .backlinks-empty {
+   390|            color: var(--text-muted);
+   391|            font-size: 0.9375rem;
+   392|            font-style: italic;
+   393|        }
+   394|
+   395|        /* Responsive */
+   396|        @media (max-width: 1023px) {
+   397|            .sidebar {
+   398|                display: none;
+   399|            }
+   400|
+   401|            .main-content {
+   402|                margin-left: 0;
+   403|                padding: 64px 24px 48px;
+   404|            }
+   405|
+   406|            .sidebar-toggle {
+   407|                display: none;
+   408|            }
+   409|
+   410|            .hamburger-btn {
+   411|                display: block;
+   412|            }
+   413|
+   414|            .mobile-drawer {
+   415|                display: block;
+   416|            }
+   417|
+   418|            h1 {
+   419|                font-size: 2rem;
+   420|            }
+   421|
+   422|            h2 {
+   423|                font-size: 1.5rem;
+   424|            }
+   425|        }
+   426|
+   427|        @media (max-width: 767px) {
+   428|            body {
+   429|                font-size: 1rem;
+   430|            }
+   431|
+   432|            .main-content {
+   433|                padding: 64px 16px 48px;
+   434|            }
+   435|
+   436|            h1 {
+   437|                font-size: 1.75rem;
+   438|            }
+   439|
+   440|            h2 {
+   441|                font-size: 1.375rem;
+   442|            }
+   443|
+   444|            h3 {
+   445|                font-size: 1.125rem;
+   446|            }
+   447|        }
+   448|        /* Top Navigation */
+   449|        .top-nav {
+   450|            width: 100%;
+   451|            background: var(--bg-secondary);
+   452|            border-bottom: 1px solid var(--border-light);
+   453|            padding: 16px 24px;
+   454|            display: flex;
+   455|            align-items: center;
+   456|            justify-content: flex-start;
+   457|            flex-wrap: wrap;
+   458|            gap: 32px;
+   459|        }
+   460|
+   461|        .nav-brand {
+   462|            font-family: var(--font-heading);
+   463|            font-size: 1.25rem;
+   464|            font-weight: 600;
+   465|            color: var(--text-primary);
+   466|            text-decoration: none;
+   467|            letter-spacing: -0.01em;
+   468|            white-space: nowrap;
+   469|        }
+   470|
+   471|        .nav-brand:hover {
+   472|            color: var(--accent);
+   473|            text-decoration: none;
+   474|        }
+   475|
+   476|        .nav-menu {
+   477|            display: flex;
+   478|            list-style: none;
+   479|            padding: 0;
+   480|            margin: 0;
+   481|            gap: 0;
+   482|        }
+   483|
+   484|        .nav-menu li {
+   485|            margin: 0;
+   486|            position: relative;
+   487|        }
+   488|
+   489|        .nav-menu li::before {
+   490|            display: none;
+   491|        }
+   492|
+   493|        .nav-menu > li > a {
+   494|            font-family: var(--font-body);
+   495|            font-size: 0.9375rem;
+   496|            font-weight: 500;
+   497|            color: var(--text-secondary);
+   498|            text-decoration: none;
+   499|            padding: 8px 16px;
+   500|            display: block;
+   501|            transition: color 0.2s, background 0.2s;
+   502|            border-radius: 4px;
+   503|        }
+   504|
+   505|        .nav-menu > li > a:hover {
+   506|            color: var(--accent);
+   507|            background: var(--accent-tint);
+   508|        }
+   509|
+   510|        /* Dropdown */
+   511|        .dropdown {
+   512|            display: none;
+   513|            position: absolute;
+   514|            top: 100%;
+   515|            left: 0;
+   516|            background: var(--bg-primary);
+   517|            border: 1px solid var(--border-light);
+   518|            border-radius: 4px;
+   519|            min-width: 220px;
+   520|            padding: 8px 0;
+   521|            z-index: 300;
+   522|        }
+   523|
+   524|        .nav-menu li:hover .dropdown {
+   525|            display: block;
+   526|        }
+   527|
+   528|        .dropdown a {
+   529|            font-family: var(--font-body);
+   530|            font-size: 0.875rem;
+   531|            color: var(--text-secondary);
+   532|            text-decoration: none;
+   533|            padding: 8px 20px;
+   534|            display: block;
+   535|            transition: color 0.2s, background 0.2s;
+   536|        }
+   537|
+   538|        .dropdown a:hover {
+   539|            color: var(--accent);
+   540|            background: var(--accent-tint);
+   541|        }
+   542|
+   543|        .toggle-btn {
+   544|            top: 72px;
+   545|        }
+   546|
+   547|        .hamburger-btn {
+   548|            top: 72px;
+   549|        }
+   550|
+   551|        @media (max-width: 767px) {
+   552|            .top-nav {
+   553|                padding: 12px 16px;
+   554|                gap: 16px;
+   555|            }
+   556|            .nav-brand {
+   557|                font-size: 1.125rem;
+   558|            }
+   559|            .nav-menu > li > a {
+   560|                font-size: 0.875rem;
+   561|                padding: 6px 10px;
+   562|            }
+   563|            .dropdown {
+   564|                min-width: 180px;
+   565|            }
+   566|        }
+   567|
+   568|    </style>
+   569|</head>
+   570|<body>
+   571|    <nav class="top-nav">
+   572|        <a href="../../index.html" class="nav-brand">ZimaCube Experience Blog</a>
+   573|        <ul class="nav-menu">
+   574|            <li><a href="../../index.html">Home</a></li>
+   575|            <li>
+   576|                <a href="../first-impressions/introduction.html">First Impressions</a>
+   577|                <div class="dropdown">
+   578|                    <a href="../first-impressions/introduction.html">Introduction</a>
+   579|                    <a href="../first-impressions/unboxing.html">Unboxing</a>
+   580|                </div>
+   581|            </li>
+   582|            <li>
+   583|                <a href="../hardware/overview.html">Hardware</a>
+   584|                <div class="dropdown">
+   585|                    <a href="../hardware/overview.html">Overview</a>
+   586|                    <a href="../hardware/disassembly.html">Taking It Apart</a>
+   587|                    <a href="../hardware/would-i-buy-it.html">Would I Buy It?</a>
+   588|                    <a href="../hardware/six-weeks-later.html">Six Weeks Later</a>
+   589|                </div>
+   590|            </li>
+   591|            <li>
+   592|                <a href="../windows-server/bare-metal-setup.html">Windows Server</a>
+   593|                <div class="dropdown">
+   594|                    <a href="../windows-server/bare-metal-setup.html">Bare-Metal Setup</a>
+   595|                </div>
+   596|            </li>
+   597|            <li>
+   598|                <a href="../homelab-journal/proxmox-primary-os.html">Homelab Journal</a>
+   599|                <div class="dropdown">
+   600|                    <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
+   601|                    <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
+   602|                    <a href="../homelab-journal/backups.html">Backups</a>
+   603|                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
+                    <a href="../homelab-journal/hermes-agent-on-zimacube.html">Hermes Agent</a>
+   604|                </div>
+   605|            </li>
+   606|            <li>
+   607|                <a href="../meta/disclaimer.html">Meta</a>
+   608|                <div class="dropdown">
+   609|                    <a href="../meta/disclaimer.html">Full Disclosure</a>
+   610|                </div>
+   611|            </li>
+   612|        </ul>
+   613|    </nav>
+   614|
+   615|    <!-- Mobile Drawer -->
+   616|    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+   617|    <div class="mobile-drawer" id="mobileDrawer">
+   618|        <div class="toc-title">Contents</div>
+   619|        <ul class="toc-list" id="mobileToc">
+   620|            <li><a href="#cpu">CPU</a></li>
+   621|            <li><a href="#ram">RAM</a></li>
+   622|            <li><a href="#storage">Storage</a></li>
+   623|            <li><a href="#networking">Networking</a></li>
+   624|            <li><a href="#pcie-expansion">PCIe Expansion</a></li>
+   625|            <li><a href="#ports">Ports</a></li>
+   626|            <li><a href="#build-and-thermals">Build and Thermals</a></li>
+   627|            <li><a href="#the-quirks">The Quirks</a></li>
+   628|        </ul>
+   629|    </div>
+   630|
+   631|    <!-- Desktop Sidebar -->
+   632|    <aside class="sidebar" id="sidebar">
+   633|        <div class="toc-title">Contents</div>
+   634|        <ul class="toc-list" id="desktopToc">
+   635|            <li><a href="#cpu">CPU</a></li>
+   636|            <li><a href="#ram">RAM</a></li>
+   637|            <li><a href="#storage">Storage</a></li>
+   638|            <li><a href="#networking">Networking</a></li>
+   639|            <li><a href="#pcie-expansion">PCIe Expansion</a></li>
+   640|            <li><a href="#ports">Ports</a></li>
+   641|            <li><a href="#build-and-thermals">Build and Thermals</a></li>
+   642|            <li><a href="#the-quirks">The Quirks</a></li>
+   643|        </ul>
+   644|    </aside>
+   645|
+   646|    <!-- Toggle Buttons -->
+   647|    <button class="toggle-btn sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">⊗</button>
+   648|    <button class="toggle-btn hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" title="Open contents">☰</button>
+   649|
+   650|    <!-- Main Content -->
+   651|    <main class="main-content">
+   652|        <div class="content-inner">
+   653|            <h1>Hardware Overview</h1>
+   654|
+   655|            <p>I have the Standard model. Silver casing, not the black Pro. Here's what's inside.</p>
+   656|
+   657|            <h2 id="cpu">CPU</h2>
+   658|
+   659|            <ul>
+   660|                <li>Intel i3-1215U</li>
+   661|                <li>6 cores total: 6 efficiency cores + 1 performance core</li>
+   662|                <li>Performance core is hyperthreaded, giving 8 logical cores</li>
+   663|                <li>Boosts up to 4.4GHz</li>
+   664|                <li>Not a desktop chip, but plenty for NAS duty plus VMs</li>
+   665|            </ul>
+   666|
+   667|            <h2 id="ram">RAM</h2>
+   668|
+   669|            <ul>
+   670|                <li>Up to 64GB DDR5 officially supported</li>
+   671|                <li>Two SO-DIMM slots, easy to access</li>
+   672|                <li>Mine came with a single 8GB stick</li>
+   673|                <li>I added a 32GB stick for 40GB total</li>
+   674|            </ul>
+   675|
+   676|            <h2 id="storage">Storage</h2>
+   677|
+   678|            <ul>
+   679|                <li>Six 3.5" drive bays with caddies</li>
+   680|                <li>Four M.2 NVMe slots in the dedicated "seventh bay" area</li>
+   681|                <li>Those four NVMe slots are capped at ~800MB/s read/write due to CPU PCIe lane limits</li>
+   682|                <li>Two additional NVMe slots on the motherboard itself</li>
+   683|                <li>One motherboard slot came with a 256GB boot drive for ZimaOS</li>
+   684|                <li>Second motherboard slot is free for cache, another OS, or expansion</li>
+   685|            </ul>
+   686|
+   687|            <h2 id="networking">Networking</h2>
+   688|
+   689|            <ul>
+   690|                <li>Dual 2.5GbE ports on the Standard</li>
+   691|                <li>Pro model adds an AQC113 Aquantia 10Gb NIC (three Ethernet ports total)</li>
+   692|                <li>For my use case, dual 2.5GbE is plenty</li>
+   693|            </ul>
+   694|
+   695|            <h2 id="pcie-expansion">PCIe Expansion</h2>
+   696|
+   697|            <ul>
+   698|                <li>Slot 1: PCIe Gen 4 x4 electrically, physical x16 slot</li>
+   699|                <li>Slot 2: PCIe Gen 3 x2 electrically, physical x8 slot</li>
+   700|                <li>Low-profile GPUs, quad NICs, HBAs all work fine</li>
+   701|                <li>No external power available — cards must run off slot power alone</li>
+   702|            </ul>
+   703|
+   704|            <h2 id="ports">Ports</h2>
+   705|
+   706|            <p><strong>Back:</strong></p>
+   707|            <ul>
+   708|                <li>Two Thunderbolt 4 ports (support PC direct connection)</li>
+   709|                <li>Two USB 3.0 Type-A ports</li>
+   710|                <li>Dual 2.5GbE</li>
+   711|            </ul>
+   712|
+   713|            <p><strong>Front:</strong></p>
+   714|            <ul>
+   715|                <li>Two USB 3.0 Type-A ports</li>
+   716|                <li>One USB-C 3.0 port</li>
+   717|            </ul>
+   718|
+   719|            <h2 id="build-and-thermals">Build and Thermals</h2>
+   720|
+   721|            <ul>
+   722|                <li>Silver aluminum casing on Standard, black on Pro</li>
+   723|                <li>Caddies are solid once assembled</li>
+   724|                <li>Fan noise at idle: present but not offensive</li>
+   725|                <li>Under sustained load: fans ramp up, noticeable but not screaming</li>
+   726|                <li>Heat management is reasonable for the form factor</li>
+   727|            </ul>
+   728|
+   729|            <h2 id="the-quirks">The Quirks</h2>
+   730|
+   731|            <ul>
+   732|                <li>External power brick still bothers me — there's empty space at the top of the case</li>
+   733|                <li>800MB/s cap on the four NVMe slots in the drive bay area is worth knowing before you buy</li>
+   734|                <li>Motherboard NVMe slots are unrestricted, so boot from there or use for cache</li>
+   735|            </ul>
+   736|
+   737|            <div class="post-footer">
+   738|                <em>Written: May 2026</em>
+   739|            </div>
+   740|
+   741|            <div class="backlinks">
+   742|                <h3>Related Posts</h3>
+   743|                <p class="backlinks-empty">No direct links from this post.</p>
+   744|
+   745|                <h3 style="margin-top: 24px;">Referenced By</h3>
+   746|                <ul>
+   747|                    <li><a href="../../index.html">ZimaCube Experience Blog</a> — homepage</li>
+   748|                    <li><a href="disassembly.html">Taking the ZimaCube Apart</a> — "I mentioned the fan noise in the hardware post — under Windows it's actually..."</li>
+   749|                </ul>
+   750|            </div>
+   751|        </div>
+   752|    </main>
+   753|
+   754|    <script>
+   755|        // Sidebar toggle (desktop)
+   756|        function toggleSidebar() {
+   757|            const sidebar = document.getElementById('sidebar');
+   758|            sidebar.classList.toggle('collapsed');
+   759|            const btn = document.getElementById('sidebarToggle');
+   760|            btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '⊗';
+   761|        }
+   762|
+   763|        // Mobile drawer
+   764|        function openDrawer() {
+   765|            document.getElementById('mobileDrawer').classList.add('active');
+   766|            document.getElementById('drawerOverlay').classList.add('active');
+   767|            document.body.style.overflow = 'hidden';
+   768|        }
+   769|
+   770|        function closeDrawer() {
+   771|            document.getElementById('mobileDrawer').classList.remove('active');
+   772|            document.getElementById('drawerOverlay').classList.remove('active');
+   773|            document.body.style.overflow = '';
+   774|        }
+   775|
+   776|        // Active TOC highlighting
+   777|        function updateActiveToc() {
+   778|            const headings = document.querySelectorAll('h2[id]');
+   779|            const tocLinks = document.querySelectorAll('.toc-list a');
+   780|            let activeId = '';
+   781|
+   782|            headings.forEach(heading => {
+   783|                const rect = heading.getBoundingClientRect();
+   784|                if (rect.top <= 100) {
+   785|                    activeId = heading.id;
+   786|                }
+   787|            });
+   788|
+   789|            tocLinks.forEach(link => {
+   790|                link.classList.remove('active');
+   791|                if (activeId && link.getAttribute('href') === '#' + activeId) {
+   792|                    link.classList.add('active');
+   793|                }
+   794|            });
+   795|        }
+   796|
+   797|        window.addEventListener('scroll', updateActiveToc);
+   798|        updateActiveToc();
+   799|    </script>
+   800|</body>
+   801|</html>
+   802|

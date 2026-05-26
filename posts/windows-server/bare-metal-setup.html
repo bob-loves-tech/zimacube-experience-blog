@@ -1,794 +1,795 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bare-Metal Windows Server 2025 on a NAS — ZimaCube Experience Blog</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #FAFAF8;
-            --bg-secondary: #F5F5F2;
-            --text-primary: #1A1A1A;
-            --text-secondary: #6B6B6B;
-            --text-muted: #9E9E9E;
-            --accent: #6D28D9;
-            --accent-hover: #5B21B6;
-            --accent-tint: rgba(109, 40, 217, 0.06);
-            --border-light: #E5E5E5;
-            --border-accent: #6D28D9;
-            --content-max: 720px;
-            --sidebar-width: 260px;
-            --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: var(--font-body);
-            font-size: 1.125rem;
-            line-height: 1.65;
-            color: var(--text-primary);
-            background: var(--bg-primary);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Layout */
-        .page-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-light);
-            padding: 32px 24px;
-            overflow-y: auto;
-            z-index: 100;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 48px 24px;
-            max-width: calc(var(--content-max) + 48px);
-        }
-
-        .content-inner {
-            max-width: var(--content-max);
-            margin: 0 auto;
-        }
-
-        /* Mobile drawer */
-        .drawer-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.3);
-            z-index: 199;
-        }
-
-        .drawer-overlay.active {
-            display: block;
-        }
-
-        .mobile-drawer {
-            display: none;
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 280px;
-            height: 100vh;
-            background: var(--bg-primary);
-            border-left: 1px solid var(--border-light);
-            padding: 24px;
-            z-index: 200;
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .mobile-drawer.active {
-            transform: translateX(0);
-        }
-
-        /* Toggle buttons */
-        .toggle-btn {
-            position: fixed;
-            top: 16px;
-            z-index: 150;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-light);
-            border-radius: 4px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-family: var(--font-body);
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-
-        .toggle-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .sidebar-toggle {
-            left: calc(var(--sidebar-width) + 16px);
-        }
-
-        .sidebar.collapsed + .main-content .sidebar-toggle {
-            left: 16px;
-        }
-
-        .hamburger-btn {
-            display: none;
-            right: 16px;
-            top: 16px;
-        }
-
-        /* TOC */
-        .toc-title {
-            font-family: var(--font-heading);
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-            letter-spacing: -0.01em;
-        }
-
-        .toc-list {
-            list-style: none;
-        }
-
-        .toc-list li {
-            margin-bottom: 8px;
-        }
-
-        .toc-list li::before {
-            display: none;
-        }
-
-        .toc-list a {
-            text-decoration: none;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            display: block;
-            padding: 4px 0;
-            border-left: 2px solid transparent;
-            padding-left: 12px;
-            transition: all 0.2s;
-        }
-
-        .toc-list a:hover {
-            color: var(--accent);
-        }
-
-        .toc-list a.active {
-            color: var(--accent);
-            border-left-color: var(--accent);
-            font-weight: 500;
-        }
-
-        .toc-list a.h3 {
-            padding-left: 24px;
-            font-size: 0.8125rem;
-        }
-
-        /* Typography */
-        h1 {
-            font-family: var(--font-heading);
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-            color: var(--text-primary);
-            margin-bottom: 32px;
-        }
-
-        h2 {
-            font-family: var(--font-heading);
-            font-size: 1.75rem;
-            font-weight: 600;
-            line-height: 1.3;
-            letter-spacing: -0.01em;
-            color: var(--text-primary);
-            margin-top: 48px;
-            margin-bottom: 20px;
-            scroll-margin-top: 24px;
-        }
-
-        h3 {
-            font-family: var(--font-body);
-            font-size: 1.25rem;
-            font-weight: 600;
-            line-height: 1.4;
-            color: var(--text-primary);
-            margin-top: 32px;
-            margin-bottom: 16px;
-            scroll-margin-top: 24px;
-        }
-
-        p {
-            margin-bottom: 20px;
-        }
-
-        a {
-            color: var(--accent);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        a:hover {
-            color: var(--accent-hover);
-            text-decoration: underline;
-        }
-
-        hr {
-            border: none;
-            border-top: 1px solid var(--border-light);
-            margin: 48px 0;
-            text-align: center;
-        }
-
-        /* Lists */
-        ul, ol {
-            margin-bottom: 20px;
-            padding-left: 24px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
-
-        ul {
-            list-style: none;
-        }
-
-        ul li::before {
-            content: "";
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            margin-left: -18px;
-            margin-right: 12px;
-            vertical-align: middle;
-        }
-
-        /* Blockquote */
-        blockquote {
-            border-left: 3px solid var(--border-accent);
-            background: var(--accent-tint);
-            padding: 16px 20px;
-            margin: 24px 0;
-            font-style: italic;
-            border-radius: 0 4px 4px 0;
-        }
-
-        blockquote p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Code */
-        code {
-            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
-            font-size: 0.9375rem;
-            background: #F0F0EE;
-            padding: 2px 6px;
-            border-radius: 3px;
-            color: var(--text-primary);
-        }
-
-        pre {
-            background: #1E1E1E;
-            color: #E4E4E4;
-            padding: 16px 20px;
-            border-radius: 4px;
-            overflow-x: auto;
-            margin-bottom: 20px;
-            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
-            font-size: 0.9375rem;
-            line-height: 1.6;
-        }
-
-        pre code {
-            background: transparent;
-            padding: 0;
-            color: inherit;
-        }
-
-        /* Images */
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-            border: 1px solid var(--border-light);
-            display: block;
-            margin: 24px 0;
-        }
-
-        figcaption, .image-caption {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: -16px;
-            margin-bottom: 24px;
-            font-style: italic;
-        }
-
-        /* Footer date */
-        .post-footer {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            margin-top: 48px;
-            padding-top: 24px;
-            border-top: 1px solid var(--border-light);
-        }
-
-        .post-footer em {
-            font-style: italic;
-        }
-
-        /* Backlinks */
-        .backlinks {
-            margin-top: 48px;
-            padding-top: 32px;
-            border-top: 1px solid var(--border-light);
-        }
-
-        .backlinks h3 {
-            font-size: 1.125rem;
-            margin-top: 0;
-            margin-bottom: 16px;
-        }
-
-        .backlinks ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .backlinks ul li::before {
-            display: none;
-        }
-
-        .backlinks li {
-            margin-bottom: 8px;
-        }
-
-        .backlinks a {
-            font-size: 0.9375rem;
-        }
-
-        .backlinks-empty {
-            color: var(--text-muted);
-            font-size: 0.9375rem;
-            font-style: italic;
-        }
-
-        /* Responsive */
-        @media (max-width: 1023px) {
-            .sidebar {
-                display: none;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 64px 24px 48px;
-            }
-
-            .sidebar-toggle {
-                display: none;
-            }
-
-            .hamburger-btn {
-                display: block;
-            }
-
-            .mobile-drawer {
-                display: block;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            h2 {
-                font-size: 1.5rem;
-            }
-        }
-
-        @media (max-width: 767px) {
-            body {
-                font-size: 1rem;
-            }
-
-            .main-content {
-                padding: 64px 16px 48px;
-            }
-
-            h1 {
-                font-size: 1.75rem;
-            }
-
-            h2 {
-                font-size: 1.375rem;
-            }
-
-            h3 {
-                font-size: 1.125rem;
-            }
-        }
-        /* Top Navigation */
-        .top-nav {
-            width: 100%;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-light);
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            flex-wrap: wrap;
-            gap: 32px;
-        }
-
-        .nav-brand {
-            font-family: var(--font-heading);
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            text-decoration: none;
-            letter-spacing: -0.01em;
-            white-space: nowrap;
-        }
-
-        .nav-brand:hover {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            gap: 0;
-        }
-
-        .nav-menu li {
-            margin: 0;
-            position: relative;
-        }
-
-        .nav-menu li::before {
-            display: none;
-        }
-
-        .nav-menu > li > a {
-            font-family: var(--font-body);
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 8px 16px;
-            display: block;
-            transition: color 0.2s, background 0.2s;
-            border-radius: 4px;
-        }
-
-        .nav-menu > li > a:hover {
-            color: var(--accent);
-            background: var(--accent-tint);
-        }
-
-        /* Dropdown */
-        .dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-light);
-            border-radius: 4px;
-            min-width: 220px;
-            padding: 8px 0;
-            z-index: 300;
-        }
-
-        .nav-menu li:hover .dropdown {
-            display: block;
-        }
-
-        .dropdown a {
-            font-family: var(--font-body);
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 8px 20px;
-            display: block;
-            transition: color 0.2s, background 0.2s;
-        }
-
-        .dropdown a:hover {
-            color: var(--accent);
-            background: var(--accent-tint);
-        }
-
-        .toggle-btn {
-            top: 72px;
-        }
-
-        .hamburger-btn {
-            top: 72px;
-        }
-
-        @media (max-width: 767px) {
-            .top-nav {
-                padding: 12px 16px;
-                gap: 16px;
-            }
-            .nav-brand {
-                font-size: 1.125rem;
-            }
-            .nav-menu > li > a {
-                font-size: 0.875rem;
-                padding: 6px 10px;
-            }
-            .dropdown {
-                min-width: 180px;
-            }
-        }
-
-    </style>
-</head>
-<body>
-    <nav class="top-nav">
-        <a href="../../index.html" class="nav-brand">ZimaCube Experience Blog</a>
-        <ul class="nav-menu">
-            <li><a href="../../index.html">Home</a></li>
-            <li>
-                <a href="../first-impressions/introduction.html">First Impressions</a>
-                <div class="dropdown">
-                    <a href="../first-impressions/introduction.html">Introduction</a>
-                    <a href="../first-impressions/unboxing.html">Unboxing</a>
-                </div>
-            </li>
-            <li>
-                <a href="../hardware/overview.html">Hardware</a>
-                <div class="dropdown">
-                    <a href="../hardware/overview.html">Overview</a>
-                    <a href="../hardware/disassembly.html">Taking It Apart</a>
-                    <a href="../hardware/would-i-buy-it.html">Would I Buy It?</a>
-                    <a href="../hardware/six-weeks-later.html">Six Weeks Later</a>
-                </div>
-            </li>
-            <li>
-                <a href="../windows-server/bare-metal-setup.html">Windows Server</a>
-                <div class="dropdown">
-                    <a href="../windows-server/bare-metal-setup.html">Bare-Metal Setup</a>
-                </div>
-            </li>
-            <li>
-                <a href="../homelab-journal/proxmox-primary-os.html">Homelab Journal</a>
-                <div class="dropdown">
-                    <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
-                    <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
-                    <a href="../homelab-journal/backups.html">Backups</a>
-                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
-                </div>
-            </li>
-            <li>
-                <a href="../meta/disclaimer.html">Meta</a>
-                <div class="dropdown">
-                    <a href="../meta/disclaimer.html">Full Disclosure</a>
-                </div>
-            </li>
-        </ul>
-    </nav>
-
-    <!-- Mobile Drawer -->
-    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-    <div class="mobile-drawer" id="mobileDrawer">
-        <div class="toc-title">Contents</div>
-        <ul class="toc-list" id="mobileToc">
-            <li><a href="#why-i-wiped-zimaos">Why I Wiped ZimaOS</a></li>
-            <li><a href="#the-install-itself">The Install Itself</a></li>
-            <li><a href="#the-driver-hunt">The Driver Hunt</a></li>
-            <li><a href="#everything-that-failed" class="h3">Everything that failed</a></li>
-            <li><a href="#the-first-win-network-drivers" class="h3">The first win: network drivers</a></li>
-            <li><a href="#what-worked-after-that-the-intel-tool" class="h3">What worked after that: the Intel tool</a></li>
-            <li><a href="#what-still-needed-manual-work" class="h3">What still needed manual work</a></li>
-            <li><a href="#the-proxmox-detour" class="h3">The Proxmox detour</a></li>
-            <li><a href="#life-after-the-drivers">Life After the Drivers</a></li>
-            <li><a href="#my-honest-take">My Honest Take</a></li>
-        </ul>
-    </div>
-
-    <!-- Desktop Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="toc-title">Contents</div>
-        <ul class="toc-list" id="desktopToc">
-            <li><a href="#why-i-wiped-zimaos">Why I Wiped ZimaOS</a></li>
-            <li><a href="#the-install-itself">The Install Itself</a></li>
-            <li><a href="#the-driver-hunt">The Driver Hunt</a></li>
-            <li><a href="#everything-that-failed" class="h3">Everything that failed</a></li>
-            <li><a href="#the-first-win-network-drivers" class="h3">The first win: network drivers</a></li>
-            <li><a href="#what-worked-after-that-the-intel-tool" class="h3">What worked after that: the Intel tool</a></li>
-            <li><a href="#what-still-needed-manual-work" class="h3">What still needed manual work</a></li>
-            <li><a href="#the-proxmox-detour" class="h3">The Proxmox detour</a></li>
-            <li><a href="#life-after-the-drivers">Life After the Drivers</a></li>
-            <li><a href="#my-honest-take">My Honest Take</a></li>
-        </ul>
-    </aside>
-
-    <!-- Toggle Buttons -->
-    <button class="toggle-btn sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">⊗</button>
-    <button class="toggle-btn hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" title="Open contents">☰</button>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="content-inner">
-            <h1>Bare-Metal Windows Server 2025 on a NAS</h1>
-            <p>Installing Windows is normally boring. You boot from USB, click Next a few times, make a coffee, and you're done. Windows Server 2025 is not that install. Not on this hardware.</p>
-            <p>I reinstalled this machine three times before I got it right. That's not a complaint. It's a warning.</p>
-            <h2 id="why-i-wiped-zimaos">Why I Wiped ZimaOS</h2>
-            <p>The ZimaCube ships with ZimaOS, a clean Linux-based NAS system built around Docker and simple file sharing. For most people, it's the right answer. You plug it in, you get a NAS. Done.</p>
-            <p>I am not most people.</p>
-            <p>I wanted a homelab server. Active Directory so I could play with domain-joined machines. DHCP so the Cube could handle IP assignment for my whole network. DNS so I could stop typing IP addresses to reach things. And Remote Desktop — a proper remote desktop, not a web terminal or VNC session that feels like it's running through a straw.</p>
-            <p>You can do all of this on Linux. I know you can. I've set up Samba on Ubuntu, I've wrestled with BIND config files, I've stared at ISC DHCP logs wondering why a lease won't renew. It works. It also takes time, and when something breaks at 11pm, you're the one reading man pages.</p>
-            <p>Windows Server does all of this with GUI wizards. Click a role, click Next, it's running. If you already know Windows — and most people do — the learning curve for the server features is surprisingly shallow. You're not learning a new operating system. You're learning new tools inside one you already understand.</p>
-            <p>The license helps too. Microsoft gives you a 180-day evaluation. Six months to poke around, build a domain, break things, rebuild them, and decide if it's worth paying for. No upfront cost. No credit card.</p>
-            <p>So I pulled the 256GB NVMe boot drive, grabbed a USB stick with the Server 2025 ISO, and went for it.</p>
-            <h2 id="the-install-itself">The Install Itself</h2>
-            <p>If you've installed Windows 11, about 90% of the Server 2025 installer looks identical. Same blue-purple setup screen. Same disk partitioning tool. Same progress bar with unhelpfully vague messages like "Getting files ready for installation."</p>
-            <p>The differences are small but worth knowing about:</p>
-            <ul>
-            <li><strong>Edition choice matters.</strong> You want "Windows Server 2025 Standard" with "Desktop Experience." The Desktop Experience part is critical — without it, you get Server Core, which is a black terminal window and nothing else. No Start menu. No taskbar. Just a blinking cursor and regret.</li>
-            <li><strong>No Microsoft account.</strong> Server doesn't ask you to sign in. It asks for a local administrator password, and that's it. No "let's finish setting up your device" screens, no OneDrive prompts, no "recommended browser settings." It installs, it reboots, it lands at a desktop.</li>
-            <li><strong>No drivers.</strong> This is the one that matters. Windows 11 comes with a massive driver library. Plug in almost any consumer laptop or desktop from the last five years, and it'll at least get you to a working desktop with network access. Server 2025 strips most of that out. It assumes you're installing on server hardware with manufacturer-provided driver packs.</li>
-            </ul>
-            <p>The ZimaCube is not server hardware. It's a compact NAS box with an Intel i3-1215U, consumer-grade networking, and a motherboard that was never meant to run Windows Server. The installer doesn't know what to do with half of it.</p>
-            <p>The desktop appeared. That was the last thing that went smoothly for about four hours.</p>
-            <h2 id="the-driver-hunt">The Driver Hunt</h2>
-            <p>Here's what Device Manager looked like after first boot: yellow triangles on unknown devices everywhere. Chipset. SM Bus controller. Several PCI devices with generic placeholder names. The network adapters were there — Device Manager saw both Intel i226-V 2.5GbE ports — but they wouldn't pull an IP address. They showed up, they just refused to actually work.</p>
-            <p>So I had network adapters that existed but were useless, and a pile of other devices Windows couldn't identify. Close, but not close enough.</p>
-            <h3 id="everything-that-failed">Everything that failed</h3>
-            <p>Without working internet on the Cube, I couldn't download anything directly. I started downloading utilities on a separate PC, copying them over via USB, and running them locally.</p>
-            <p>First up: Snappy Driver Installer. It scanned. It thought about it. It found nothing.</p>
-            <p>Then Driver Booster. Same result. Scanned, shrugged, reported zero missing drivers. I tried a few other tools whose names I've already forgotten, and every single one gave me the same answer: no drivers found.</p>
-            <p>They weren't lying, exactly. There are no driver packages formally labeled "Windows Server 2025" for a consumer NAS motherboard. The drivers exist — they're just packaged for Windows 11. And these tools, by design, won't cross that OS version boundary.</p>
-            <p>I had six to eight devices sitting unclaimed, and not a single automated tool would touch them.</p>
-            <h3 id="the-first-win-network-drivers">The first win: network drivers</h3>
-            <p>The Intel i226-V 2.5GbE adapters were the priority. Everything else depended on getting online first.</p>
-            <p>I downloaded the full Intel Ethernet driver package on a separate PC, copied it to a USB stick, and walked it across to the Cube. In Device Manager, I right-clicked each network adapter, chose Update driver, browsed to the extracted driver folder, and pointed Windows at it.</p>
-            <p>This worked. Both ports came up immediately, grabbed IP addresses, and I was online. Genuinely satisfying moment — the kind where you lean back in your chair and feel like you've earned something.</p>
-            <h3 id="what-worked-after-that-the-intel-tool">What worked after that: the Intel tool</h3>
-            <p>With internet now working, I ran the Intel Driver & Support Assistant directly on the Cube. This time it had something to work with. It scanned the hardware, connected to Intel's servers, and found the majority of the remaining drivers. Chipset components, management engine, several other things I'd been staring at in Device Manager — all installed cleanly through the Intel tool.</p>
-            <p>This was a surprise. I'd assumed the tool would refuse to work on Windows Server the same way it had when I'd tried it earlier without a network connection. But once the i226 drivers were in place and the Cube could reach the internet, the Intel utility did its job. Not perfectly — but well enough to knock out most of the yellow triangles.</p>
-            <h3 id="what-still-needed-manual-work">What still needed manual work</h3>
-            <p>The Intel tool didn't catch everything. The chipset driver in particular needed to be installed manually. And there were still a few devices — PCI controllers, some system devices — that Intel's tool either missed or didn't have packages for.</p>
-            <p>For these, I went to the Windows Update Catalog.</p>
-            <p>The Windows Update Catalog is a website — catalog.update.microsoft.com — that contains every driver package Microsoft has ever distributed through Windows Update. It's also ugly and completely manual. There's no scan button. You have to tell it exactly what you're looking for.</p>
-            <p>Here's the process for each remaining device. I did this for about six or eight things:</p>
-            <ol>
-            <li>Open Device Manager</li>
-            <li>Right-click the unknown device → Properties</li>
-            <li>Go to the Details tab</li>
-            <li>From the dropdown, select "Hardware Ids"</li>
-            <li>Copy the top string. It looks something like <code>PCI\VEN_8086&DEV_125C</code></li>
-            <li>Paste it into the search bar on catalog.update.microsoft.com</li>
-            <li>Find the matching driver package, download the <code>.cab</code> file</li>
-            <li>Extract the cab (right-click → Extract All — Windows handles this natively)</li>
-            <li>Back in Device Manager, right-click the device → Update driver → Browse my computer for drivers → point at the extracted folder</li>
-            <li>Let Windows install it</li>
-            </ol>
-            <p>Each one took a few minutes. Multiply by eight, and you've burned a solid chunk of an afternoon. But it worked every time. Once you know the hardware-ID-to-CAB-file pipeline, nothing stays broken for long.</p>
-            <h3 id="the-proxmox-detour">The Proxmox detour</h3>
-            <p>I should mention: I did give up at one point during all of this. After the first install where I couldn't get any network going, I wiped the drive and installed Proxmox. Created a Windows Server 2025 VM inside it. It worked perfectly — the hypervisor abstracts all the hardware, so Windows only sees generic virtual devices with flawless driver support.</p>
-            <p>I ran it virtualized for a bit. It was fine. But it wasn't what I wanted. I bought a six-bay NAS to run an operating system on bare metal, not behind an abstraction layer.</p>
-            <p>So I wiped Proxmox, reinstalled Windows Server from scratch, and did the driver hunt properly. The difference between the first attempt and the second was knowing the playbook: network drivers first, Intel tool second, Windows Update Catalog for the leftovers.</p>
-            <h2 id="life-after-the-drivers">Life After the Drivers</h2>
-            <p>Once everything was installed, Windows Server 2025 ran surprisingly well on this hardware.</p>
-            <p>The i3-1215U handled the server roles without breathing hard. I had Active Directory running, DHCP handing out leases, and DNS resolving internal hostnames — all on a compact NAS box that draws about as much power as a laptop. Remote Desktop felt native, not like a remote session. I could sit at my main PC and use the Cube as if it were a second monitor.</p>
-            <p>Storage Spaces handled the drive bays cleanly. I didn't have to mess with RAID cards or complicated disk configurations. Windows saw the drives, I added them to a pool, and it just worked.</p>
-            <p>The dual 2.5GbE ports both came up at full speed. No weird negotiation issues, no dropped packets that I noticed.</p>
-            <p>Fan behavior was fine. The Cube's fans ramp a bit higher under Windows than they did under ZimaOS — the OS doesn't have the same tuned fan curves Zima built — but it's not offensive. You hear it in a quiet room. You don't hear it if there's any ambient noise at all.</p>
-            <h2 id="my-honest-take">My Honest Take</h2>
-            <p>I've since moved back to Proxmox.</p>
-            <p>Not because Windows Server failed. It didn't. It ran well, it did what I asked, and the driver situation was a one-time pain that stayed fixed.</p>
-            <p>I moved because my plans for this machine kept growing. I want to add a GPU — probably something low-profile that fits the PCIe slot — and pass it through to a VM for OBS recording. I want to run Synology DSM in a VM for its backup tools. I want DNS in one container, file sharing in another, and room to spin up whatever experiment I think of next. I'm trying to offload work from my main desktop PC onto the ZimaCube — make it the always-on machine that handles recording, backups, and services while my desktop gets to just be a desktop.</p>
-            <p>Proxmox is better at that. Windows Server can do virtualization — it has Hyper-V — but GPU passthrough on consumer hardware is not its strength. Proxmox was built for exactly this kind of split-personality setup.</p>
-            <p>That said: if you're new to homelabbing and you already know Windows, I genuinely recommend trying Windows Server. The learning curve for Active Directory, DNS, and DHCP is gentle when the interface looks like something you've used for years. The 180-day trial costs nothing. And when you eventually hit the limits of what Windows Server can do — when you want GPU passthrough or nested virtualization or a dozen lightweight containers — that's when Proxmox makes sense. Not before.</p>
-            <p>Just don't expect the drivers to work out of the box. The playbook is: download the Intel i226 Ethernet package to a USB stick before you start, get those network drivers installed first so you're online, then run the Intel Driver & Support Assistant to catch most of the rest, and use the Windows Update Catalog with hardware IDs for whatever's still broken. Budget a Sunday afternoon. The drivers are out there — you just have to know the order to find them in.</p>
-            
-            <hr>
-            
-            
-            <div class="post-footer">
-                <em>May 2026</em>
-            </div>
-
-            <div class="backlinks">
-                <h3>Related Posts</h3>
-                <ul>
-            <li><a href="../hardware/overview.html">Hardware Overview</a> — specs this install was running on</li>
-            <li><a href="../first-impressions/introduction.html">Introduction</a> — why this repo exists</li>
-            </ul>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        // Sidebar toggle (desktop)
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-            const btn = document.getElementById('sidebarToggle');
-            btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '⊗';
-        }
-
-        // Mobile drawer
-        function openDrawer() {
-            document.getElementById('mobileDrawer').classList.add('active');
-            document.getElementById('drawerOverlay').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDrawer() {
-            document.getElementById('mobileDrawer').classList.remove('active');
-            document.getElementById('drawerOverlay').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // Active TOC highlighting
-        function updateActiveToc() {
-            const headings = document.querySelectorAll('h2[id]');
-            const tocLinks = document.querySelectorAll('.toc-list a');
-            let activeId = '';
-
-            headings.forEach(heading => {
-                const rect = heading.getBoundingClientRect();
-                if (rect.top <= 100) {
-                    activeId = heading.id;
-                }
-            });
-
-            tocLinks.forEach(link => {
-                link.classList.remove('active');
-                if (activeId && link.getAttribute('href') === '#' + activeId) {
-                    link.classList.add('active');
-                }
-            });
-        }
-
-        window.addEventListener('scroll', updateActiveToc);
-        updateActiveToc();
-    </script>
-</body>
-</html>
+     1|<!DOCTYPE html>
+     2|<html lang="en">
+     3|<head>
+     4|    <meta charset="UTF-8">
+     5|    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6|    <title>Bare-Metal Windows Server 2025 on a NAS — ZimaCube Experience Blog</title>
+     7|    <link rel="preconnect" href="https://fonts.googleapis.com">
+     8|    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     9|    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    10|    <style>
+    11|        :root {
+    12|            --bg-primary: #FAFAF8;
+    13|            --bg-secondary: #F5F5F2;
+    14|            --text-primary: #1A1A1A;
+    15|            --text-secondary: #6B6B6B;
+    16|            --text-muted: #9E9E9E;
+    17|            --accent: #6D28D9;
+    18|            --accent-hover: #5B21B6;
+    19|            --accent-tint: rgba(109, 40, 217, 0.06);
+    20|            --border-light: #E5E5E5;
+    21|            --border-accent: #6D28D9;
+    22|            --content-max: 720px;
+    23|            --sidebar-width: 260px;
+    24|            --font-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    25|            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    26|        }
+    27|
+    28|        *, *::before, *::after {
+    29|            box-sizing: border-box;
+    30|            margin: 0;
+    31|            padding: 0;
+    32|        }
+    33|
+    34|        html {
+    35|            scroll-behavior: smooth;
+    36|        }
+    37|
+    38|        body {
+    39|            font-family: var(--font-body);
+    40|            font-size: 1.125rem;
+    41|            line-height: 1.65;
+    42|            color: var(--text-primary);
+    43|            background: var(--bg-primary);
+    44|            -webkit-font-smoothing: antialiased;
+    45|            -moz-osx-font-smoothing: grayscale;
+    46|        }
+    47|
+    48|        /* Layout */
+    49|        .page-wrapper {
+    50|            display: flex;
+    51|            min-height: 100vh;
+    52|        }
+    53|
+    54|        .sidebar {
+    55|            width: var(--sidebar-width);
+    56|            position: fixed;
+    57|            top: 0;
+    58|            left: 0;
+    59|            height: 100vh;
+    60|            background: var(--bg-secondary);
+    61|            border-right: 1px solid var(--border-light);
+    62|            padding: 32px 24px;
+    63|            overflow-y: auto;
+    64|            z-index: 100;
+    65|            transition: transform 0.3s ease;
+    66|        }
+    67|
+    68|        .sidebar.collapsed {
+    69|            transform: translateX(-100%);
+    70|        }
+    71|
+    72|        .main-content {
+    73|            flex: 1;
+    74|            margin-left: var(--sidebar-width);
+    75|            padding: 48px 24px;
+    76|            max-width: calc(var(--content-max) + 48px);
+    77|        }
+    78|
+    79|        .content-inner {
+    80|            max-width: var(--content-max);
+    81|            margin: 0 auto;
+    82|        }
+    83|
+    84|        /* Mobile drawer */
+    85|        .drawer-overlay {
+    86|            display: none;
+    87|            position: fixed;
+    88|            top: 0;
+    89|            left: 0;
+    90|            width: 100%;
+    91|            height: 100%;
+    92|            background: rgba(0,0,0,0.3);
+    93|            z-index: 199;
+    94|        }
+    95|
+    96|        .drawer-overlay.active {
+    97|            display: block;
+    98|        }
+    99|
+   100|        .mobile-drawer {
+   101|            display: none;
+   102|            position: fixed;
+   103|            top: 0;
+   104|            right: 0;
+   105|            width: 280px;
+   106|            height: 100vh;
+   107|            background: var(--bg-primary);
+   108|            border-left: 1px solid var(--border-light);
+   109|            padding: 24px;
+   110|            z-index: 200;
+   111|            overflow-y: auto;
+   112|            transform: translateX(100%);
+   113|            transition: transform 0.3s ease;
+   114|        }
+   115|
+   116|        .mobile-drawer.active {
+   117|            transform: translateX(0);
+   118|        }
+   119|
+   120|        /* Toggle buttons */
+   121|        .toggle-btn {
+   122|            position: fixed;
+   123|            top: 16px;
+   124|            z-index: 150;
+   125|            background: var(--bg-primary);
+   126|            border: 1px solid var(--border-light);
+   127|            border-radius: 4px;
+   128|            padding: 8px 12px;
+   129|            cursor: pointer;
+   130|            font-family: var(--font-body);
+   131|            font-size: 0.875rem;
+   132|            color: var(--text-secondary);
+   133|            transition: all 0.2s;
+   134|        }
+   135|
+   136|        .toggle-btn:hover {
+   137|            border-color: var(--accent);
+   138|            color: var(--accent);
+   139|        }
+   140|
+   141|        .sidebar-toggle {
+   142|            left: calc(var(--sidebar-width) + 16px);
+   143|        }
+   144|
+   145|        .sidebar.collapsed + .main-content .sidebar-toggle {
+   146|            left: 16px;
+   147|        }
+   148|
+   149|        .hamburger-btn {
+   150|            display: none;
+   151|            right: 16px;
+   152|            top: 16px;
+   153|        }
+   154|
+   155|        /* TOC */
+   156|        .toc-title {
+   157|            font-family: var(--font-heading);
+   158|            font-size: 1rem;
+   159|            font-weight: 600;
+   160|            color: var(--text-primary);
+   161|            margin-bottom: 16px;
+   162|            letter-spacing: -0.01em;
+   163|        }
+   164|
+   165|        .toc-list {
+   166|            list-style: none;
+   167|        }
+   168|
+   169|        .toc-list li {
+   170|            margin-bottom: 8px;
+   171|        }
+   172|
+   173|        .toc-list li::before {
+   174|            display: none;
+   175|        }
+   176|
+   177|        .toc-list a {
+   178|            text-decoration: none;
+   179|            color: var(--text-secondary);
+   180|            font-size: 0.875rem;
+   181|            display: block;
+   182|            padding: 4px 0;
+   183|            border-left: 2px solid transparent;
+   184|            padding-left: 12px;
+   185|            transition: all 0.2s;
+   186|        }
+   187|
+   188|        .toc-list a:hover {
+   189|            color: var(--accent);
+   190|        }
+   191|
+   192|        .toc-list a.active {
+   193|            color: var(--accent);
+   194|            border-left-color: var(--accent);
+   195|            font-weight: 500;
+   196|        }
+   197|
+   198|        .toc-list a.h3 {
+   199|            padding-left: 24px;
+   200|            font-size: 0.8125rem;
+   201|        }
+   202|
+   203|        /* Typography */
+   204|        h1 {
+   205|            font-family: var(--font-heading);
+   206|            font-size: 2.5rem;
+   207|            font-weight: 700;
+   208|            line-height: 1.2;
+   209|            letter-spacing: -0.02em;
+   210|            color: var(--text-primary);
+   211|            margin-bottom: 32px;
+   212|        }
+   213|
+   214|        h2 {
+   215|            font-family: var(--font-heading);
+   216|            font-size: 1.75rem;
+   217|            font-weight: 600;
+   218|            line-height: 1.3;
+   219|            letter-spacing: -0.01em;
+   220|            color: var(--text-primary);
+   221|            margin-top: 48px;
+   222|            margin-bottom: 20px;
+   223|            scroll-margin-top: 24px;
+   224|        }
+   225|
+   226|        h3 {
+   227|            font-family: var(--font-body);
+   228|            font-size: 1.25rem;
+   229|            font-weight: 600;
+   230|            line-height: 1.4;
+   231|            color: var(--text-primary);
+   232|            margin-top: 32px;
+   233|            margin-bottom: 16px;
+   234|            scroll-margin-top: 24px;
+   235|        }
+   236|
+   237|        p {
+   238|            margin-bottom: 20px;
+   239|        }
+   240|
+   241|        a {
+   242|            color: var(--accent);
+   243|            text-decoration: none;
+   244|            transition: color 0.2s;
+   245|        }
+   246|
+   247|        a:hover {
+   248|            color: var(--accent-hover);
+   249|            text-decoration: underline;
+   250|        }
+   251|
+   252|        hr {
+   253|            border: none;
+   254|            border-top: 1px solid var(--border-light);
+   255|            margin: 48px 0;
+   256|            text-align: center;
+   257|        }
+   258|
+   259|        /* Lists */
+   260|        ul, ol {
+   261|            margin-bottom: 20px;
+   262|            padding-left: 24px;
+   263|        }
+   264|
+   265|        li {
+   266|            margin-bottom: 8px;
+   267|        }
+   268|
+   269|        ul {
+   270|            list-style: none;
+   271|        }
+   272|
+   273|        ul li::before {
+   274|            content: "";
+   275|            display: inline-block;
+   276|            width: 6px;
+   277|            height: 6px;
+   278|            background: var(--accent);
+   279|            margin-left: -18px;
+   280|            margin-right: 12px;
+   281|            vertical-align: middle;
+   282|        }
+   283|
+   284|        /* Blockquote */
+   285|        blockquote {
+   286|            border-left: 3px solid var(--border-accent);
+   287|            background: var(--accent-tint);
+   288|            padding: 16px 20px;
+   289|            margin: 24px 0;
+   290|            font-style: italic;
+   291|            border-radius: 0 4px 4px 0;
+   292|        }
+   293|
+   294|        blockquote p:last-child {
+   295|            margin-bottom: 0;
+   296|        }
+   297|
+   298|        /* Code */
+   299|        code {
+   300|            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+   301|            font-size: 0.9375rem;
+   302|            background: #F0F0EE;
+   303|            padding: 2px 6px;
+   304|            border-radius: 3px;
+   305|            color: var(--text-primary);
+   306|        }
+   307|
+   308|        pre {
+   309|            background: #1E1E1E;
+   310|            color: #E4E4E4;
+   311|            padding: 16px 20px;
+   312|            border-radius: 4px;
+   313|            overflow-x: auto;
+   314|            margin-bottom: 20px;
+   315|            font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+   316|            font-size: 0.9375rem;
+   317|            line-height: 1.6;
+   318|        }
+   319|
+   320|        pre code {
+   321|            background: transparent;
+   322|            padding: 0;
+   323|            color: inherit;
+   324|        }
+   325|
+   326|        /* Images */
+   327|        img {
+   328|            max-width: 100%;
+   329|            height: auto;
+   330|            border-radius: 4px;
+   331|            border: 1px solid var(--border-light);
+   332|            display: block;
+   333|            margin: 24px 0;
+   334|        }
+   335|
+   336|        figcaption, .image-caption {
+   337|            text-align: center;
+   338|            color: var(--text-secondary);
+   339|            font-size: 0.875rem;
+   340|            margin-top: -16px;
+   341|            margin-bottom: 24px;
+   342|            font-style: italic;
+   343|        }
+   344|
+   345|        /* Footer date */
+   346|        .post-footer {
+   347|            text-align: center;
+   348|            color: var(--text-muted);
+   349|            font-size: 0.875rem;
+   350|            margin-top: 48px;
+   351|            padding-top: 24px;
+   352|            border-top: 1px solid var(--border-light);
+   353|        }
+   354|
+   355|        .post-footer em {
+   356|            font-style: italic;
+   357|        }
+   358|
+   359|        /* Backlinks */
+   360|        .backlinks {
+   361|            margin-top: 48px;
+   362|            padding-top: 32px;
+   363|            border-top: 1px solid var(--border-light);
+   364|        }
+   365|
+   366|        .backlinks h3 {
+   367|            font-size: 1.125rem;
+   368|            margin-top: 0;
+   369|            margin-bottom: 16px;
+   370|        }
+   371|
+   372|        .backlinks ul {
+   373|            list-style: none;
+   374|            padding-left: 0;
+   375|        }
+   376|
+   377|        .backlinks ul li::before {
+   378|            display: none;
+   379|        }
+   380|
+   381|        .backlinks li {
+   382|            margin-bottom: 8px;
+   383|        }
+   384|
+   385|        .backlinks a {
+   386|            font-size: 0.9375rem;
+   387|        }
+   388|
+   389|        .backlinks-empty {
+   390|            color: var(--text-muted);
+   391|            font-size: 0.9375rem;
+   392|            font-style: italic;
+   393|        }
+   394|
+   395|        /* Responsive */
+   396|        @media (max-width: 1023px) {
+   397|            .sidebar {
+   398|                display: none;
+   399|            }
+   400|
+   401|            .main-content {
+   402|                margin-left: 0;
+   403|                padding: 64px 24px 48px;
+   404|            }
+   405|
+   406|            .sidebar-toggle {
+   407|                display: none;
+   408|            }
+   409|
+   410|            .hamburger-btn {
+   411|                display: block;
+   412|            }
+   413|
+   414|            .mobile-drawer {
+   415|                display: block;
+   416|            }
+   417|
+   418|            h1 {
+   419|                font-size: 2rem;
+   420|            }
+   421|
+   422|            h2 {
+   423|                font-size: 1.5rem;
+   424|            }
+   425|        }
+   426|
+   427|        @media (max-width: 767px) {
+   428|            body {
+   429|                font-size: 1rem;
+   430|            }
+   431|
+   432|            .main-content {
+   433|                padding: 64px 16px 48px;
+   434|            }
+   435|
+   436|            h1 {
+   437|                font-size: 1.75rem;
+   438|            }
+   439|
+   440|            h2 {
+   441|                font-size: 1.375rem;
+   442|            }
+   443|
+   444|            h3 {
+   445|                font-size: 1.125rem;
+   446|            }
+   447|        }
+   448|        /* Top Navigation */
+   449|        .top-nav {
+   450|            width: 100%;
+   451|            background: var(--bg-secondary);
+   452|            border-bottom: 1px solid var(--border-light);
+   453|            padding: 16px 24px;
+   454|            display: flex;
+   455|            align-items: center;
+   456|            justify-content: flex-start;
+   457|            flex-wrap: wrap;
+   458|            gap: 32px;
+   459|        }
+   460|
+   461|        .nav-brand {
+   462|            font-family: var(--font-heading);
+   463|            font-size: 1.25rem;
+   464|            font-weight: 600;
+   465|            color: var(--text-primary);
+   466|            text-decoration: none;
+   467|            letter-spacing: -0.01em;
+   468|            white-space: nowrap;
+   469|        }
+   470|
+   471|        .nav-brand:hover {
+   472|            color: var(--accent);
+   473|            text-decoration: none;
+   474|        }
+   475|
+   476|        .nav-menu {
+   477|            display: flex;
+   478|            list-style: none;
+   479|            padding: 0;
+   480|            margin: 0;
+   481|            gap: 0;
+   482|        }
+   483|
+   484|        .nav-menu li {
+   485|            margin: 0;
+   486|            position: relative;
+   487|        }
+   488|
+   489|        .nav-menu li::before {
+   490|            display: none;
+   491|        }
+   492|
+   493|        .nav-menu > li > a {
+   494|            font-family: var(--font-body);
+   495|            font-size: 0.9375rem;
+   496|            font-weight: 500;
+   497|            color: var(--text-secondary);
+   498|            text-decoration: none;
+   499|            padding: 8px 16px;
+   500|            display: block;
+   501|            transition: color 0.2s, background 0.2s;
+   502|            border-radius: 4px;
+   503|        }
+   504|
+   505|        .nav-menu > li > a:hover {
+   506|            color: var(--accent);
+   507|            background: var(--accent-tint);
+   508|        }
+   509|
+   510|        /* Dropdown */
+   511|        .dropdown {
+   512|            display: none;
+   513|            position: absolute;
+   514|            top: 100%;
+   515|            left: 0;
+   516|            background: var(--bg-primary);
+   517|            border: 1px solid var(--border-light);
+   518|            border-radius: 4px;
+   519|            min-width: 220px;
+   520|            padding: 8px 0;
+   521|            z-index: 300;
+   522|        }
+   523|
+   524|        .nav-menu li:hover .dropdown {
+   525|            display: block;
+   526|        }
+   527|
+   528|        .dropdown a {
+   529|            font-family: var(--font-body);
+   530|            font-size: 0.875rem;
+   531|            color: var(--text-secondary);
+   532|            text-decoration: none;
+   533|            padding: 8px 20px;
+   534|            display: block;
+   535|            transition: color 0.2s, background 0.2s;
+   536|        }
+   537|
+   538|        .dropdown a:hover {
+   539|            color: var(--accent);
+   540|            background: var(--accent-tint);
+   541|        }
+   542|
+   543|        .toggle-btn {
+   544|            top: 72px;
+   545|        }
+   546|
+   547|        .hamburger-btn {
+   548|            top: 72px;
+   549|        }
+   550|
+   551|        @media (max-width: 767px) {
+   552|            .top-nav {
+   553|                padding: 12px 16px;
+   554|                gap: 16px;
+   555|            }
+   556|            .nav-brand {
+   557|                font-size: 1.125rem;
+   558|            }
+   559|            .nav-menu > li > a {
+   560|                font-size: 0.875rem;
+   561|                padding: 6px 10px;
+   562|            }
+   563|            .dropdown {
+   564|                min-width: 180px;
+   565|            }
+   566|        }
+   567|
+   568|    </style>
+   569|</head>
+   570|<body>
+   571|    <nav class="top-nav">
+   572|        <a href="../../index.html" class="nav-brand">ZimaCube Experience Blog</a>
+   573|        <ul class="nav-menu">
+   574|            <li><a href="../../index.html">Home</a></li>
+   575|            <li>
+   576|                <a href="../first-impressions/introduction.html">First Impressions</a>
+   577|                <div class="dropdown">
+   578|                    <a href="../first-impressions/introduction.html">Introduction</a>
+   579|                    <a href="../first-impressions/unboxing.html">Unboxing</a>
+   580|                </div>
+   581|            </li>
+   582|            <li>
+   583|                <a href="../hardware/overview.html">Hardware</a>
+   584|                <div class="dropdown">
+   585|                    <a href="../hardware/overview.html">Overview</a>
+   586|                    <a href="../hardware/disassembly.html">Taking It Apart</a>
+   587|                    <a href="../hardware/would-i-buy-it.html">Would I Buy It?</a>
+   588|                    <a href="../hardware/six-weeks-later.html">Six Weeks Later</a>
+   589|                </div>
+   590|            </li>
+   591|            <li>
+   592|                <a href="../windows-server/bare-metal-setup.html">Windows Server</a>
+   593|                <div class="dropdown">
+   594|                    <a href="../windows-server/bare-metal-setup.html">Bare-Metal Setup</a>
+   595|                </div>
+   596|            </li>
+   597|            <li>
+   598|                <a href="../homelab-journal/proxmox-primary-os.html">Homelab Journal</a>
+   599|                <div class="dropdown">
+   600|                    <a href="../homelab-journal/zimaos-review.html">ZimaOS Review</a>
+   601|                    <a href="../homelab-journal/proxmox-primary-os.html">Why Proxmox</a>
+   602|                    <a href="../homelab-journal/backups.html">Backups</a>
+   603|                    <a href="../homelab-journal/monitoring-the-fleet.html">Monitoring the Fleet</a>
+                    <a href="../homelab-journal/hermes-agent-on-zimacube.html">Hermes Agent</a>
+   604|                </div>
+   605|            </li>
+   606|            <li>
+   607|                <a href="../meta/disclaimer.html">Meta</a>
+   608|                <div class="dropdown">
+   609|                    <a href="../meta/disclaimer.html">Full Disclosure</a>
+   610|                </div>
+   611|            </li>
+   612|        </ul>
+   613|    </nav>
+   614|
+   615|    <!-- Mobile Drawer -->
+   616|    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+   617|    <div class="mobile-drawer" id="mobileDrawer">
+   618|        <div class="toc-title">Contents</div>
+   619|        <ul class="toc-list" id="mobileToc">
+   620|            <li><a href="#why-i-wiped-zimaos">Why I Wiped ZimaOS</a></li>
+   621|            <li><a href="#the-install-itself">The Install Itself</a></li>
+   622|            <li><a href="#the-driver-hunt">The Driver Hunt</a></li>
+   623|            <li><a href="#everything-that-failed" class="h3">Everything that failed</a></li>
+   624|            <li><a href="#the-first-win-network-drivers" class="h3">The first win: network drivers</a></li>
+   625|            <li><a href="#what-worked-after-that-the-intel-tool" class="h3">What worked after that: the Intel tool</a></li>
+   626|            <li><a href="#what-still-needed-manual-work" class="h3">What still needed manual work</a></li>
+   627|            <li><a href="#the-proxmox-detour" class="h3">The Proxmox detour</a></li>
+   628|            <li><a href="#life-after-the-drivers">Life After the Drivers</a></li>
+   629|            <li><a href="#my-honest-take">My Honest Take</a></li>
+   630|        </ul>
+   631|    </div>
+   632|
+   633|    <!-- Desktop Sidebar -->
+   634|    <aside class="sidebar" id="sidebar">
+   635|        <div class="toc-title">Contents</div>
+   636|        <ul class="toc-list" id="desktopToc">
+   637|            <li><a href="#why-i-wiped-zimaos">Why I Wiped ZimaOS</a></li>
+   638|            <li><a href="#the-install-itself">The Install Itself</a></li>
+   639|            <li><a href="#the-driver-hunt">The Driver Hunt</a></li>
+   640|            <li><a href="#everything-that-failed" class="h3">Everything that failed</a></li>
+   641|            <li><a href="#the-first-win-network-drivers" class="h3">The first win: network drivers</a></li>
+   642|            <li><a href="#what-worked-after-that-the-intel-tool" class="h3">What worked after that: the Intel tool</a></li>
+   643|            <li><a href="#what-still-needed-manual-work" class="h3">What still needed manual work</a></li>
+   644|            <li><a href="#the-proxmox-detour" class="h3">The Proxmox detour</a></li>
+   645|            <li><a href="#life-after-the-drivers">Life After the Drivers</a></li>
+   646|            <li><a href="#my-honest-take">My Honest Take</a></li>
+   647|        </ul>
+   648|    </aside>
+   649|
+   650|    <!-- Toggle Buttons -->
+   651|    <button class="toggle-btn sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">⊗</button>
+   652|    <button class="toggle-btn hamburger-btn" id="hamburgerBtn" onclick="openDrawer()" title="Open contents">☰</button>
+   653|
+   654|    <!-- Main Content -->
+   655|    <main class="main-content">
+   656|        <div class="content-inner">
+   657|            <h1>Bare-Metal Windows Server 2025 on a NAS</h1>
+   658|            <p>Installing Windows is normally boring. You boot from USB, click Next a few times, make a coffee, and you're done. Windows Server 2025 is not that install. Not on this hardware.</p>
+   659|            <p>I reinstalled this machine three times before I got it right. That's not a complaint. It's a warning.</p>
+   660|            <h2 id="why-i-wiped-zimaos">Why I Wiped ZimaOS</h2>
+   661|            <p>The ZimaCube ships with ZimaOS, a clean Linux-based NAS system built around Docker and simple file sharing. For most people, it's the right answer. You plug it in, you get a NAS. Done.</p>
+   662|            <p>I am not most people.</p>
+   663|            <p>I wanted a homelab server. Active Directory so I could play with domain-joined machines. DHCP so the Cube could handle IP assignment for my whole network. DNS so I could stop typing IP addresses to reach things. And Remote Desktop — a proper remote desktop, not a web terminal or VNC session that feels like it's running through a straw.</p>
+   664|            <p>You can do all of this on Linux. I know you can. I've set up Samba on Ubuntu, I've wrestled with BIND config files, I've stared at ISC DHCP logs wondering why a lease won't renew. It works. It also takes time, and when something breaks at 11pm, you're the one reading man pages.</p>
+   665|            <p>Windows Server does all of this with GUI wizards. Click a role, click Next, it's running. If you already know Windows — and most people do — the learning curve for the server features is surprisingly shallow. You're not learning a new operating system. You're learning new tools inside one you already understand.</p>
+   666|            <p>The license helps too. Microsoft gives you a 180-day evaluation. Six months to poke around, build a domain, break things, rebuild them, and decide if it's worth paying for. No upfront cost. No credit card.</p>
+   667|            <p>So I pulled the 256GB NVMe boot drive, grabbed a USB stick with the Server 2025 ISO, and went for it.</p>
+   668|            <h2 id="the-install-itself">The Install Itself</h2>
+   669|            <p>If you've installed Windows 11, about 90% of the Server 2025 installer looks identical. Same blue-purple setup screen. Same disk partitioning tool. Same progress bar with unhelpfully vague messages like "Getting files ready for installation."</p>
+   670|            <p>The differences are small but worth knowing about:</p>
+   671|            <ul>
+   672|            <li><strong>Edition choice matters.</strong> You want "Windows Server 2025 Standard" with "Desktop Experience." The Desktop Experience part is critical — without it, you get Server Core, which is a black terminal window and nothing else. No Start menu. No taskbar. Just a blinking cursor and regret.</li>
+   673|            <li><strong>No Microsoft account.</strong> Server doesn't ask you to sign in. It asks for a local administrator password, and that's it. No "let's finish setting up your device" screens, no OneDrive prompts, no "recommended browser settings." It installs, it reboots, it lands at a desktop.</li>
+   674|            <li><strong>No drivers.</strong> This is the one that matters. Windows 11 comes with a massive driver library. Plug in almost any consumer laptop or desktop from the last five years, and it'll at least get you to a working desktop with network access. Server 2025 strips most of that out. It assumes you're installing on server hardware with manufacturer-provided driver packs.</li>
+   675|            </ul>
+   676|            <p>The ZimaCube is not server hardware. It's a compact NAS box with an Intel i3-1215U, consumer-grade networking, and a motherboard that was never meant to run Windows Server. The installer doesn't know what to do with half of it.</p>
+   677|            <p>The desktop appeared. That was the last thing that went smoothly for about four hours.</p>
+   678|            <h2 id="the-driver-hunt">The Driver Hunt</h2>
+   679|            <p>Here's what Device Manager looked like after first boot: yellow triangles on unknown devices everywhere. Chipset. SM Bus controller. Several PCI devices with generic placeholder names. The network adapters were there — Device Manager saw both Intel i226-V 2.5GbE ports — but they wouldn't pull an IP address. They showed up, they just refused to actually work.</p>
+   680|            <p>So I had network adapters that existed but were useless, and a pile of other devices Windows couldn't identify. Close, but not close enough.</p>
+   681|            <h3 id="everything-that-failed">Everything that failed</h3>
+   682|            <p>Without working internet on the Cube, I couldn't download anything directly. I started downloading utilities on a separate PC, copying them over via USB, and running them locally.</p>
+   683|            <p>First up: Snappy Driver Installer. It scanned. It thought about it. It found nothing.</p>
+   684|            <p>Then Driver Booster. Same result. Scanned, shrugged, reported zero missing drivers. I tried a few other tools whose names I've already forgotten, and every single one gave me the same answer: no drivers found.</p>
+   685|            <p>They weren't lying, exactly. There are no driver packages formally labeled "Windows Server 2025" for a consumer NAS motherboard. The drivers exist — they're just packaged for Windows 11. And these tools, by design, won't cross that OS version boundary.</p>
+   686|            <p>I had six to eight devices sitting unclaimed, and not a single automated tool would touch them.</p>
+   687|            <h3 id="the-first-win-network-drivers">The first win: network drivers</h3>
+   688|            <p>The Intel i226-V 2.5GbE adapters were the priority. Everything else depended on getting online first.</p>
+   689|            <p>I downloaded the full Intel Ethernet driver package on a separate PC, copied it to a USB stick, and walked it across to the Cube. In Device Manager, I right-clicked each network adapter, chose Update driver, browsed to the extracted driver folder, and pointed Windows at it.</p>
+   690|            <p>This worked. Both ports came up immediately, grabbed IP addresses, and I was online. Genuinely satisfying moment — the kind where you lean back in your chair and feel like you've earned something.</p>
+   691|            <h3 id="what-worked-after-that-the-intel-tool">What worked after that: the Intel tool</h3>
+   692|            <p>With internet now working, I ran the Intel Driver & Support Assistant directly on the Cube. This time it had something to work with. It scanned the hardware, connected to Intel's servers, and found the majority of the remaining drivers. Chipset components, management engine, several other things I'd been staring at in Device Manager — all installed cleanly through the Intel tool.</p>
+   693|            <p>This was a surprise. I'd assumed the tool would refuse to work on Windows Server the same way it had when I'd tried it earlier without a network connection. But once the i226 drivers were in place and the Cube could reach the internet, the Intel utility did its job. Not perfectly — but well enough to knock out most of the yellow triangles.</p>
+   694|            <h3 id="what-still-needed-manual-work">What still needed manual work</h3>
+   695|            <p>The Intel tool didn't catch everything. The chipset driver in particular needed to be installed manually. And there were still a few devices — PCI controllers, some system devices — that Intel's tool either missed or didn't have packages for.</p>
+   696|            <p>For these, I went to the Windows Update Catalog.</p>
+   697|            <p>The Windows Update Catalog is a website — catalog.update.microsoft.com — that contains every driver package Microsoft has ever distributed through Windows Update. It's also ugly and completely manual. There's no scan button. You have to tell it exactly what you're looking for.</p>
+   698|            <p>Here's the process for each remaining device. I did this for about six or eight things:</p>
+   699|            <ol>
+   700|            <li>Open Device Manager</li>
+   701|            <li>Right-click the unknown device → Properties</li>
+   702|            <li>Go to the Details tab</li>
+   703|            <li>From the dropdown, select "Hardware Ids"</li>
+   704|            <li>Copy the top string. It looks something like <code>PCI\VEN_8086&DEV_125C</code></li>
+   705|            <li>Paste it into the search bar on catalog.update.microsoft.com</li>
+   706|            <li>Find the matching driver package, download the <code>.cab</code> file</li>
+   707|            <li>Extract the cab (right-click → Extract All — Windows handles this natively)</li>
+   708|            <li>Back in Device Manager, right-click the device → Update driver → Browse my computer for drivers → point at the extracted folder</li>
+   709|            <li>Let Windows install it</li>
+   710|            </ol>
+   711|            <p>Each one took a few minutes. Multiply by eight, and you've burned a solid chunk of an afternoon. But it worked every time. Once you know the hardware-ID-to-CAB-file pipeline, nothing stays broken for long.</p>
+   712|            <h3 id="the-proxmox-detour">The Proxmox detour</h3>
+   713|            <p>I should mention: I did give up at one point during all of this. After the first install where I couldn't get any network going, I wiped the drive and installed Proxmox. Created a Windows Server 2025 VM inside it. It worked perfectly — the hypervisor abstracts all the hardware, so Windows only sees generic virtual devices with flawless driver support.</p>
+   714|            <p>I ran it virtualized for a bit. It was fine. But it wasn't what I wanted. I bought a six-bay NAS to run an operating system on bare metal, not behind an abstraction layer.</p>
+   715|            <p>So I wiped Proxmox, reinstalled Windows Server from scratch, and did the driver hunt properly. The difference between the first attempt and the second was knowing the playbook: network drivers first, Intel tool second, Windows Update Catalog for the leftovers.</p>
+   716|            <h2 id="life-after-the-drivers">Life After the Drivers</h2>
+   717|            <p>Once everything was installed, Windows Server 2025 ran surprisingly well on this hardware.</p>
+   718|            <p>The i3-1215U handled the server roles without breathing hard. I had Active Directory running, DHCP handing out leases, and DNS resolving internal hostnames — all on a compact NAS box that draws about as much power as a laptop. Remote Desktop felt native, not like a remote session. I could sit at my main PC and use the Cube as if it were a second monitor.</p>
+   719|            <p>Storage Spaces handled the drive bays cleanly. I didn't have to mess with RAID cards or complicated disk configurations. Windows saw the drives, I added them to a pool, and it just worked.</p>
+   720|            <p>The dual 2.5GbE ports both came up at full speed. No weird negotiation issues, no dropped packets that I noticed.</p>
+   721|            <p>Fan behavior was fine. The Cube's fans ramp a bit higher under Windows than they did under ZimaOS — the OS doesn't have the same tuned fan curves Zima built — but it's not offensive. You hear it in a quiet room. You don't hear it if there's any ambient noise at all.</p>
+   722|            <h2 id="my-honest-take">My Honest Take</h2>
+   723|            <p>I've since moved back to Proxmox.</p>
+   724|            <p>Not because Windows Server failed. It didn't. It ran well, it did what I asked, and the driver situation was a one-time pain that stayed fixed.</p>
+   725|            <p>I moved because my plans for this machine kept growing. I want to add a GPU — probably something low-profile that fits the PCIe slot — and pass it through to a VM for OBS recording. I want to run Synology DSM in a VM for its backup tools. I want DNS in one container, file sharing in another, and room to spin up whatever experiment I think of next. I'm trying to offload work from my main desktop PC onto the ZimaCube — make it the always-on machine that handles recording, backups, and services while my desktop gets to just be a desktop.</p>
+   726|            <p>Proxmox is better at that. Windows Server can do virtualization — it has Hyper-V — but GPU passthrough on consumer hardware is not its strength. Proxmox was built for exactly this kind of split-personality setup.</p>
+   727|            <p>That said: if you're new to homelabbing and you already know Windows, I genuinely recommend trying Windows Server. The learning curve for Active Directory, DNS, and DHCP is gentle when the interface looks like something you've used for years. The 180-day trial costs nothing. And when you eventually hit the limits of what Windows Server can do — when you want GPU passthrough or nested virtualization or a dozen lightweight containers — that's when Proxmox makes sense. Not before.</p>
+   728|            <p>Just don't expect the drivers to work out of the box. The playbook is: download the Intel i226 Ethernet package to a USB stick before you start, get those network drivers installed first so you're online, then run the Intel Driver & Support Assistant to catch most of the rest, and use the Windows Update Catalog with hardware IDs for whatever's still broken. Budget a Sunday afternoon. The drivers are out there — you just have to know the order to find them in.</p>
+   729|            
+   730|            <hr>
+   731|            
+   732|            
+   733|            <div class="post-footer">
+   734|                <em>May 2026</em>
+   735|            </div>
+   736|
+   737|            <div class="backlinks">
+   738|                <h3>Related Posts</h3>
+   739|                <ul>
+   740|            <li><a href="../hardware/overview.html">Hardware Overview</a> — specs this install was running on</li>
+   741|            <li><a href="../first-impressions/introduction.html">Introduction</a> — why this repo exists</li>
+   742|            </ul>
+   743|            </div>
+   744|        </div>
+   745|    </main>
+   746|
+   747|    <script>
+   748|        // Sidebar toggle (desktop)
+   749|        function toggleSidebar() {
+   750|            const sidebar = document.getElementById('sidebar');
+   751|            sidebar.classList.toggle('collapsed');
+   752|            const btn = document.getElementById('sidebarToggle');
+   753|            btn.textContent = sidebar.classList.contains('collapsed') ? '☰' : '⊗';
+   754|        }
+   755|
+   756|        // Mobile drawer
+   757|        function openDrawer() {
+   758|            document.getElementById('mobileDrawer').classList.add('active');
+   759|            document.getElementById('drawerOverlay').classList.add('active');
+   760|            document.body.style.overflow = 'hidden';
+   761|        }
+   762|
+   763|        function closeDrawer() {
+   764|            document.getElementById('mobileDrawer').classList.remove('active');
+   765|            document.getElementById('drawerOverlay').classList.remove('active');
+   766|            document.body.style.overflow = '';
+   767|        }
+   768|
+   769|        // Active TOC highlighting
+   770|        function updateActiveToc() {
+   771|            const headings = document.querySelectorAll('h2[id]');
+   772|            const tocLinks = document.querySelectorAll('.toc-list a');
+   773|            let activeId = '';
+   774|
+   775|            headings.forEach(heading => {
+   776|                const rect = heading.getBoundingClientRect();
+   777|                if (rect.top <= 100) {
+   778|                    activeId = heading.id;
+   779|                }
+   780|            });
+   781|
+   782|            tocLinks.forEach(link => {
+   783|                link.classList.remove('active');
+   784|                if (activeId && link.getAttribute('href') === '#' + activeId) {
+   785|                    link.classList.add('active');
+   786|                }
+   787|            });
+   788|        }
+   789|
+   790|        window.addEventListener('scroll', updateActiveToc);
+   791|        updateActiveToc();
+   792|    </script>
+   793|</body>
+   794|</html>
